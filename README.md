@@ -3,7 +3,7 @@
 Tools for analyzing IR spectra: peak detection, peak fitting, deconvolution
 of overlapping peaks, and classification of samples by type.
 
-```
+```bash
 uv sync                  # install
 uv run pytest            # tests
 uv run jupyter lab       # demo notebooks in notebooks/

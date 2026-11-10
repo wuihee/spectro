@@ -25,7 +25,7 @@ that needs.
 The whole project is a pipeline, where each step takes the output of the one
 before:
 
-```
+```text
  file / synthetic ──► Spectrum ──► preprocess ──► detect peaks ──► fit peaks ──► features ──► classify
      (1, 2)            (1)            (3)             (4)           (5, 6)          (7)          (7, 8)
 ```
@@ -47,7 +47,7 @@ architecture.
 ## Background science (just enough)
 
 | Term | What it means here |
-|---|---|
+| --- | --- |
 | **Wavenumber (cm⁻¹)** | The x-axis of an IR spectrum: 1 / wavelength. Higher = more energetic vibration. IR plots run from ~4000 on the left to ~400 on the right, by convention. |
 | **Transmittance (T, %T)** | Fraction of light that gets through the sample. Peaks point *down*. Often what the instrument exports. |
 | **Absorbance (A)** | A = −log₁₀(T). Peaks point *up*. |
@@ -87,7 +87,7 @@ It's the "contract" every other module relies on.
 ### Design choices
 
 | Choice | Why |
-|---|---|
+| --- | --- |
 | One `Spectrum` dataclass used everywhere | Every step speaks the same language; steps can be swapped or chained freely. |
 | Sort by x and validate on creation | Check once at the door, so later code (peak finding, integration) can assume clean, ascending data. Bad files fail immediately, with a clear message. |
 | Never modify in place; return a new spectrum (`with_y`) | You can always compare before and after a processing step, and a bug in one step can't silently corrupt data used elsewhere. |
@@ -130,7 +130,7 @@ height and shape), add them together, then add a baseline and noise. Because
 we built it, we know the true peaks exactly, and we keep them in a table.
 That table is the "answer key" for testing every later step.
 
-```
+```text
    [Peak, Peak, Peak]  ──►  sum of curves  ──►  + baseline  ──►  + noise  ──►  Spectrum
           │
           └────────────────────────────────────────────────────────────────►  true_peaks table
@@ -175,7 +175,7 @@ match: Lorentzian area ≈ 1.5 × Gaussian area.
 ### Design choices
 
 | Choice | Why |
-|---|---|
+| --- | --- |
 | Build synthetic data *before* any analysis | It gives us ground truth. Without it, we can't measure whether peak detection or fitting is accurate. |
 | `make_spectrum` returns the spectrum **and** the true peak table | The answer key travels with the data. Later steps output tables with the same columns, so comparison is row by row. |
 | Describe peaks by center, FWHM, height | These are what you read off a plot, so peak lists are easy to write and check. Area is derived with an exact formula. |

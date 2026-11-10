@@ -32,26 +32,49 @@ Dependencies are added only when a step's code imports them.
 
 ## Build steps
 
-- [x] **1. Project skeleton and `Spectrum` object.** `src/` layout, `Spectrum` dataclass (sorted x, validation, `with_y`, `to_absorbance`), `load_csv`, `plot_spectrum`.
-  Files: `src/spectro/{spectrum,loaders,plotting}.py`, `tests/test_spectrum.py`, `notebooks/01_spectrum_basics.ipynb`
-- [x] **2. Synthetic spectrum generator.** Line shapes (Gaussian, Lorentzian, pseudo-Voigt) parameterised by center, FWHM and height; `Peak` dataclass with analytic `area`; `make_spectrum(peaks, noise, baseline, seed)` returns the spectrum *and* a true peak table (`shape, center, fwhm, height, area`), used as ground truth for every later step.
-  Files: `src/spectro/{lineshapes,synthetic}.py`, `tests/test_synthetic.py`, `notebooks/02_synthetic_data.ipynb`
-- [ ] **3. Preprocessing.** Baseline removal (pybaselines), smoothing (Savitzky–Golay), normalization, as small swappable functions.
-- [ ] **4. Automatic peak detection.** `find_peaks` + `peak_widths` → peak table (location, width, height). Tested against step 2's true peaks.
-- [ ] **5. Peak fitting.** Fit each peak with an lmfit line shape (Gaussian / Lorentzian / Voigt / pseudo-Voigt) → center, FWHM, area, intensity with uncertainties.
-- [ ] **6. Deconvolving overlapping peaks.** Fit a sum of peaks over a region, starting from step 4 detections; use AIC/BIC to choose the number of peaks. Use synthetic data with controlled overlap to find where it breaks down.
-- [ ] **7. Classification by sample type.** Features from the peak table or the full spectrum (optionally PCA); compare logistic regression, random forest, SVM, gradient boosting with cross-validation.
-- [ ] **8. How much data do we need?** Synthetic datasets over a grid of sample size × noise × overlap; learning curves for each classifier and for peak-fitting accuracy.
+- [x] **1. Project skeleton and `Spectrum` object.** `src/` layout, `Spectrum` dataclass
+  (sorted x, validation, `with_y`, `to_absorbance`), `load_csv`, `plot_spectrum`.
+  Files: `src/spectro/{spectrum,loaders,plotting}.py`, `tests/test_spectrum.py`,
+  `notebooks/01_spectrum_basics.ipynb`
+- [x] **2. Synthetic spectrum generator.** Line shapes (Gaussian, Lorentzian,
+  pseudo-Voigt) parameterised by center, FWHM and height; `Peak` dataclass with analytic
+  `area`; `make_spectrum(peaks, noise, baseline, seed)` returns the spectrum *and* a
+  true peak table (`shape, center, fwhm, height, area`), used as ground truth for every
+  later step.
+  Files: `src/spectro/{lineshapes,synthetic}.py`, `tests/test_synthetic.py`,
+  `notebooks/02_synthetic_data.ipynb`
+- [ ] **3. Preprocessing.** Baseline removal (pybaselines), smoothing (Savitzky–Golay),
+  normalization, as small swappable functions.
+- [ ] **4. Automatic peak detection.** `find_peaks` + `peak_widths` → peak table
+  (location, width, height). Tested against step 2's true peaks.
+- [ ] **5. Peak fitting.** Fit each peak with an lmfit line shape (Gaussian / Lorentzian
+  / Voigt / pseudo-Voigt) → center, FWHM, area, intensity with uncertainties.
+- [ ] **6. Deconvolving overlapping peaks.** Fit a sum of peaks over a region, starting
+  from step 4 detections; use AIC/BIC to choose the number of peaks. Use synthetic data
+  with controlled overlap to find where it breaks down.
+- [ ] **7. Classification by sample type.** Features from the peak table or the full
+  spectrum (optionally PCA); compare logistic regression, random forest, SVM, gradient
+  boosting with cross-validation.
+- [ ] **8. How much data do we need?** Synthetic datasets over a grid of sample size ×
+  noise × overlap; learning curves for each classifier and for peak-fitting accuracy.
 
 ## Open questions
 
 - Real data file format (vendor files? which instrument?).
 - What the sample types / classes are, and roughly how many labelled spectra exist.
-- Whether "convolution over all peaks" should come back (whole-spectrum fit vs. instrument broadening).
+- Whether "convolution over all peaks" should come back (whole-spectrum fit vs.
+  instrument broadening).
 
 ## Log
 
-- **2026-11-09** — Step 1 done. 7 tests passing; demo writes `examples/output/01_spectrum_basics.png`.
-- **2026-11-09** — Switched demos from example scripts to Jupyter notebooks (`notebooks/`); `examples/` removed.
-- **2026-11-09** — Added `CLAUDE.md` with the workflow and documentation standard (NumPy docstrings). Ruff set up for formatting and linting; existing docstrings converted.
-- **2026-11-09** — Step 2 done. 21 tests passing. Random variation and labelled sample types deferred to steps 7–8, built on `make_spectrum`.
+- **2026-11-09** — Step 1 done. 7 tests passing; demo writes
+  `examples/output/01_spectrum_basics.png`.
+- **2026-11-09** — Switched demos from example scripts to Jupyter notebooks
+  (`notebooks/`); `examples/` removed.
+- **2026-11-09** — Added `CLAUDE.md` with the workflow and documentation standard (NumPy
+  docstrings). Ruff set up for formatting and linting; existing docstrings converted.
+- **2026-11-09** — Step 2 done. 21 tests passing. Random variation and labelled sample
+  types deferred to steps 7–8, built on `make_spectrum`.
+- **2026-11-09** — Added markdown linting (`pymarkdownlnt`, configured in
+  `pyproject.toml`); existing docs fixed to pass. `CLAUDE.md` now lists it as a fourth
+  check.

@@ -20,16 +20,18 @@ in [docs/PLAN.md](docs/PLAN.md); update it at the end of every step.
 
 ## Commands
 
-```
+```bash
 uv run pytest                 # tests
 uv run ruff format            # format (src, tests and notebooks)
 uv run ruff check --fix       # lint, including docstring rules
+uv run pymarkdown scan *.md docs/*.md   # lint markdown docs
 uv run jupyter lab            # open notebooks
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/<nb>.ipynb
 ```
 
-Before finishing a step, run all three checks: `ruff format`, `ruff check`,
-`pytest`. Then execute the new notebook to make sure it runs top to bottom.
+Before finishing a step, run all four checks: `ruff format`, `ruff check`,
+`pymarkdown scan`, `pytest`. Then execute the new notebook to make sure it
+runs top to bottom.
 
 ## Code style
 
@@ -111,3 +113,14 @@ notebook's goal, broken into small parts:
 - Keep notebooks short and focused on **how to use** the code: the main
   calls and their visual results. Leave out edge cases, validation and
   error handling; the tests cover those.
+
+**Markdown files** (`README.md`, `CLAUDE.md`, `docs/*.md`) must pass
+`pymarkdown scan`; its settings are in `pyproject.toml`:
+
+- Wrap prose at 88 characters, like the code. Table rows and code blocks are
+  exempt.
+- Give every fenced code block a language (`bash`, `python`, or `text` for
+  diagrams).
+- Write table separators with spaces: `| --- | --- |`.
+- Inline HTML is limited to `<details>` and `<summary>` (the folded answers
+  in `STUDY.md`).

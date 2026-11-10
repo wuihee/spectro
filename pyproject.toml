@@ -21,6 +21,7 @@ build-backend = "uv_build"
 dev = [
     "ipykernel>=7.4.0",
     "jupyterlab>=4.6.6",
+    "pymarkdownlnt>=0.9.41",
     "pytest>=9.2.0",
     "ruff>=0.17.4",
 ]
@@ -49,3 +50,12 @@ convention = "numpy"
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D"]          # test names say what they check
 "notebooks/*" = ["D", "E402"]  # markdown cells document notebooks
+
+[tool.pymarkdown]
+extensions.markdown-tables.enabled = true
+plugins.md013.line_length = 88          # match ruff
+plugins.md013.heading_line_length = 88
+plugins.md013.tables = false            # table rows can't be wrapped
+plugins.md013.code_blocks = false       # ASCII pipeline diagrams
+plugins.md024.siblings_only = true      # each STUDY.md step repeats "Read", "Try", ...
+plugins.md033.allowed_elements = "details,summary"  # folded answers in STUDY.md
