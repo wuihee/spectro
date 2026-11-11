@@ -217,6 +217,102 @@ match: Lorentzian area ≈ 1.5 × Gaussian area.
 
 ---
 
+## Step 3 · Preprocessing
+
+### The idea
+
+A measured spectrum is **peaks + baseline + noise**, and only the peaks carry
+chemistry. Preprocessing strips off the other two, then puts samples on a
+common scale. Each operation is a small function that takes a `Spectrum` and
+returns a new one, so they chain:
+
+```text
+ raw ──► remove_baseline ──► smooth ──► normalize ──► ready for peak detection / features
+         (drift away)        (noise down)  (scale removed)
+```
+
+Because step 2 lets us build the same spectrum with and without baseline and
+noise, every function is tested by asking: *does it give back the clean
+spectrum?*
+
+### Read
+
+1. `src/spectro/preprocessing.py`: four public functions. Read the `Notes`
+   of `estimate_baseline` and `smooth`; they hold the science. Then look at
+   `_record`, which keeps the processing history.
+2. `tests/test_preprocessing.py`: see how each test builds a "raw" and a
+   "clean" spectrum from the same peaks and compares them.
+3. `notebooks/03_preprocessing.ipynb`: run it.
+
+### Try
+
+- Call `remove_baseline(raw, lam=1e4)` and `lam=1e10`. Which one eats into
+  the peaks, and which one can't bend enough to follow the drift?
+- Compare `remove_baseline(raw, "asls")` with the default `"arpls"` on the
+  notebook spectrum. Look at the O–H band near 3350 cm⁻¹.
+- Smooth the C=O peak with `window=5, 11, 21, 41` and print `y.max()` each
+  time. At roughly what window does the height start to drop?
+- Try `polyorder=2` versus `polyorder=4` with the same window.
+- Print `metadata["preprocessing"]` after a chain of calls, and check that
+  the input's metadata didn't change.
+
+### Design choices
+
+| Choice | Why |
+| --- | --- |
+| Separate small functions, not one `preprocess()` | Each step can be swapped, skipped or reordered, and tested on its own. Plain function calls chain clearly enough; a pipeline helper can come later if needed. |
+| arPLS as the default baseline (via pybaselines) | On our synthetic spectra it got back the true baseline best at every noise level. AsLS (the classic choice) sits below the true baseline when there is noise and rides up under the broad O–H band. Other pybaselines methods are one argument away. |
+| `estimate_baseline` is public | So you can plot the baseline over the raw spectrum and check it by eye, which is how baseline correction is judged on real data. |
+| `lam` default of 1e7, tuned on 1801 points | `lam` is a stiffness penalty whose effect depends on how many points there are. A fixed, documented default is simpler than auto-scaling; change it for very different data. |
+| Savitzky–Golay smoothing | It fits a local polynomial, so it keeps peak height and width far better than a moving average for the same noise reduction. |
+| Smoothing window in **points**, not cm⁻¹ | That's what the filter actually uses and it doesn't assume evenly spaced data. The docstring says how to convert: keep it below FWHM ÷ point spacing. |
+| Four normalisations | "max" for plotting, "area" and "vector" for comparing samples, "snv" for classification (step 7). |
+| `y_unit` records the normalisation | "absorbance (max-normalized)" stops a normalised spectrum from being mistaken for real absorbance, and the plot label says so. |
+| History in `metadata["preprocessing"]` | A processed spectrum says how it was made, which matters when comparing results later. |
+| Order: baseline → smooth → normalise | Normalising first divides by a value that includes the baseline, so identical samples with different backgrounds end up at different scales (notebook part 4). |
+
+### Check yourself
+
+1. What three things add up to a measured spectrum, and which one do we
+   want?
+2. In arPLS, what does `lam` control, and what goes wrong if it's too small
+   or too large?
+3. Why does the baseline fit follow the bottom of the spectrum instead of
+   going through the peaks?
+4. Why is the broad O–H band the hardest case for baseline removal?
+5. Why Savitzky–Golay rather than a moving average?
+6. What is the rule of thumb for choosing the smoothing window?
+7. Why must the baseline be removed before normalising?
+8. Why is the smoothing window in points rather than cm⁻¹?
+
+<details>
+<summary>Answers</summary>
+
+1. Peaks + baseline + noise. We want the peaks; baseline and noise are
+   removed.
+2. Stiffness: how much the fitted curve is allowed to bend. Too small and it
+   bends up into the peaks, cutting them down; too large and it can't follow
+   real curvature in the drift.
+3. Points far above the current curve get almost no weight in the next
+   iteration, so peaks stop pulling it up, while points within the noise
+   keep full weight.
+4. It is 300 cm⁻¹ wide, so it starts to look like slow background drift. The
+   method can't fully tell them apart, and the band loses a little height.
+5. It fits a polynomial in each window, which follows the curved top of a
+   peak; an average just blurs it, lowering the height and widening it.
+6. Keep the window (in points) well below the narrowest FWHM divided by the
+   point spacing. At 2 cm⁻¹ spacing and a 25 cm⁻¹ peak, that's below ~12
+   points; 11 is the default.
+7. Normalising divides by something (max, area, norm) that includes the
+   baseline, so two identical samples with different backgrounds get
+   different scales, and subtracting the baseline afterwards can't undo it.
+8. The filter works on points, and a cm⁻¹ window assumes evenly spaced data,
+   which real files may not have.
+
+</details>
+
+---
+
 ## Ready to move on when you can…
 
 - [ ] Draw the pipeline from memory and say what each step takes in and
@@ -228,6 +324,9 @@ match: Lorentzian area ≈ 1.5 × Gaussian area.
       say which has more area.
 - [ ] Build a spectrum with `make_spectrum` from your own peak list, without
       looking at the notebook.
+- [ ] Explain what arPLS does in one sentence and what `lam` controls.
+- [ ] Explain the smoothing trade-off and pick a window for a given FWHM.
+- [ ] Say why the order is baseline → smooth → normalise.
 - [ ] Answer every "Check yourself" question above without opening the
       answers.
 
@@ -242,9 +341,16 @@ match: Lorentzian area ≈ 1.5 × Gaussian area.
 > plus noise and baseline. It returns the true peak table alongside the
 > spectrum, so every later stage can be measured against ground truth. That
 > also lets us control noise and peak overlap to find where methods break
-> down, and later, how much data classification needs.
+> down, and later, how much data classification needs. Preprocessing is a
+> set of small functions run in order: arPLS baseline removal, Savitzky–Golay
+> smoothing and normalisation. Each is tested by checking it gives back the
+> clean synthetic spectrum.
 
 Be ready for follow-ups like: *Why pseudo-Voigt and not a true Voigt?* (A
 standard, cheap approximation that is close enough for IR and is what we'll
 fit with later.) *How do you know the generator is correct?* (Tests check
-height at center, FWHM and area against the formulas for every shape.)
+height at center, FWHM and area against the formulas for every shape.) *Why
+arPLS and not AsLS or a polynomial?* (On our test spectra it got back the
+true baseline best, and it doesn't need to know where the peaks are.) *How
+did you choose the smoothing window?* (Below the narrowest peak's FWHM in
+points; the tests show the peak flattening once the window is wider.)

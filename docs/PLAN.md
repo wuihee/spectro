@@ -13,6 +13,9 @@ deconvolution of overlapping peaks, and classification of samples by type.
 | "Convolution over all peaks" | Parked for now |
 | Peak parameters | Center, FWHM, height (what you read off a plot); area is computed analytically |
 | Line shapes | Gaussian, Lorentzian, pseudo-Voigt; no true Voigt for now |
+| Baseline method | arPLS by default (`lam=1e7` for ~1800 points); beat AsLS on synthetic data, esp. under broad bands |
+| Smoothing window | In points, not cm⁻¹; keep below narrowest FWHM ÷ point spacing |
+| Preprocessing order | Baseline → smooth → normalise |
 | Working style | One step at a time; each step = one module + tests + a demo notebook in `notebooks/`. Next step starts only after review. |
 
 ## Libraries
@@ -23,7 +26,7 @@ deconvolution of overlapping peaks, and classification of samples by type.
 | Tests | pytest | 1 |
 | Demos and visuals | jupyterlab, ipykernel (dev) | 1 |
 | Formatting and linting | ruff (dev) | 1 |
-| Peak finding, smoothing | scipy.signal | 3–4 |
+| Peak finding, smoothing | scipy.signal | 3 |
 | Baseline correction | pybaselines | 3 |
 | Peak fitting / deconvolution | lmfit | 5 |
 | Classification, learning curves | scikit-learn | 7 |
@@ -43,8 +46,11 @@ Dependencies are added only when a step's code imports them.
   later step.
   Files: `src/spectro/{lineshapes,synthetic}.py`, `tests/test_synthetic.py`,
   `notebooks/02_synthetic_data.ipynb`
-- [ ] **3. Preprocessing.** Baseline removal (pybaselines), smoothing (Savitzky–Golay),
-  normalization, as small swappable functions.
+- [x] **3. Preprocessing.** `estimate_baseline` / `remove_baseline` (pybaselines, arPLS
+  default), `smooth` (Savitzky–Golay, window in points), `normalize` (max, area, vector,
+  SNV). Each records itself in `metadata["preprocessing"]`.
+  Files: `src/spectro/preprocessing.py`, `tests/test_preprocessing.py`,
+  `notebooks/03_preprocessing.ipynb`
 - [ ] **4. Automatic peak detection.** `find_peaks` + `peak_widths` → peak table
   (location, width, height). Tested against step 2's true peaks.
 - [ ] **5. Peak fitting.** Fit each peak with an lmfit line shape (Gaussian / Lorentzian
@@ -78,3 +84,6 @@ Dependencies are added only when a step's code imports them.
 - **2026-11-09** — Added markdown linting (`pymarkdownlnt`, configured in
   `pyproject.toml`); existing docs fixed to pass. `CLAUDE.md` now lists it as a fourth
   check.
+- **2026-11-10** — Step 3 done. 42 tests passing. Switched the baseline default from AsLS
+  (as first planned) to arPLS after comparing both against synthetic ground truth. Known
+  limit: very broad bands (O–H, ~300 cm⁻¹ FWHM) lose a little height.
