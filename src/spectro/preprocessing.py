@@ -7,6 +7,7 @@ history. The usual order is baseline → smooth → normalise.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Literal
 
 import numpy as np
@@ -71,7 +72,8 @@ def estimate_baseline(spectrum: Spectrum, method: str = "arpls", **kwargs) -> Sp
     .. [2] pybaselines documentation, https://pybaselines.readthedocs.io
     """
     fitter = Baseline(x_data=spectrum.x)
-    fit = getattr(fitter, method, None)
+    # Every pybaselines method returns (baseline, params).
+    fit: Callable[..., tuple[np.ndarray, dict]] | None = getattr(fitter, method, None)
     if method.startswith("_") or not callable(fit):
         raise ValueError(f"unknown baseline method {method!r}")
 
@@ -159,7 +161,7 @@ def smooth(spectrum: Spectrum, window: int = 11, polyorder: int = 3) -> Spectrum
     if window > len(spectrum):
         raise ValueError("window is longer than the spectrum")
 
-    y = savgol_filter(spectrum.y, window, polyorder)
+    y = np.asarray(savgol_filter(spectrum.y, window, polyorder))
     return _record(spectrum, y, f"smooth({window}, {polyorder})")
 
 

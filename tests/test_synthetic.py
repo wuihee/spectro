@@ -38,7 +38,7 @@ def test_invalid_peak_is_rejected():
     with pytest.raises(ValueError):
         Peak(center=1700, fwhm=5, height=1, eta=1.5)
     with pytest.raises(ValueError):
-        Peak(center=1700, fwhm=5, height=1, shape="triangle")
+        Peak(center=1700, fwhm=5, height=1, shape="triangle")  # pyright: ignore[reportArgumentType]
 
 
 def test_clean_spectrum_is_sum_of_peaks():

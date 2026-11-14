@@ -57,7 +57,7 @@ def _has_header(path: Path, sep: str | None) -> bool:
     first_row = pd.read_csv(
         path, sep=sep, header=None, nrows=1, engine="python", comment="#"
     )
-    numeric = pd.to_numeric(first_row.iloc[0], errors="coerce")
+    numeric = pd.Series(pd.to_numeric(first_row.iloc[0], errors="coerce"))
     return bool(numeric.isna().any())
 
 

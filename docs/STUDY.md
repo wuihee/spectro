@@ -68,8 +68,8 @@ It's the "contract" every other module relies on.
 
 ### Read
 
-1. `src/spectro/spectrum.py`: the dataclass. Focus on `__post_init__` (what
-   is guaranteed) and `with_y` (how changes are made).
+1. `src/spectro/spectrum.py`: the dataclass. Focus on `__init__` (what is
+   guaranteed) and `with_y` (how changes are made).
 2. `src/spectro/plotting.py`: short; note the inverted x-axis.
 3. `src/spectro/loaders.py`: skim. Just know it turns a text file into a
    `Spectrum`.
@@ -90,6 +90,7 @@ It's the "contract" every other module relies on.
 | --- | --- |
 | One `Spectrum` dataclass used everywhere | Every step speaks the same language; steps can be swapped or chained freely. |
 | Sort by x and validate on creation | Check once at the door, so later code (peak finding, integration) can assume clean, ascending data. Bad files fail immediately, with a clear message. |
+| Hand-written `__init__` on a dataclass | Callers may pass lists or arrays (`ArrayLike`), but the stored fields are always float arrays (`np.ndarray`). The dataclass-generated `__init__` can't type the two differently, so the type checker would reject `Spectrum(x=[1, 2], ...)`. |
 | Never modify in place; return a new spectrum (`with_y`) | You can always compare before and after a processing step, and a bug in one step can't silently corrupt data used elsewhere. |
 | Convert to absorbance | Only absorbance is proportional to concentration (Beer–Lambert), so areas and classification features are meaningful. |
 | Plain CSV loader for now | No file format is fixed yet. New formats can be added as new loader functions without touching anything else, because they all return a `Spectrum`. |

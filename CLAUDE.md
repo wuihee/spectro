@@ -24,13 +24,14 @@ in [docs/PLAN.md](docs/PLAN.md); update it at the end of every step.
 uv run pytest                 # tests
 uv run ruff format            # format (src, tests and notebooks)
 uv run ruff check --fix       # lint, including docstring rules
+uv run pyright                # type check src and tests (same engine as Pylance)
 uv run pymarkdown scan *.md docs/*.md   # lint markdown docs
 uv run jupyter lab            # open notebooks
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/<nb>.ipynb
 ```
 
-Before finishing a step, run all four checks: `ruff format`, `ruff check`,
-`pymarkdown scan`, `pytest`. Then execute the new notebook to make sure it
+Before finishing a step, run all five checks: `ruff format`, `ruff check`,
+`pyright`, `pymarkdown scan`, `pytest`. Then execute the new notebook to make sure it
 runs top to bottom.
 
 ## Code style
@@ -38,7 +39,15 @@ runs top to bottom.
 - Ruff handles formatting and linting; its settings are in `pyproject.toml`
   (88-character lines, import sorting, pydocstyle with the NumPy convention).
 - Use type hints on every function signature, and `from __future__ import
-  annotations` at the top of each module.
+  annotations` at the top of each module. Pyright checks them; its settings
+  are in `pyproject.toml`.
+- Make type hints match the docstrings. Inputs documented as `array_like`
+  are typed `ArrayLike` (from `numpy.typing`) and converted with
+  `np.asarray`; values a function returns or stores are typed `np.ndarray`.
+  Parameters limited to a few strings use a `Literal` alias (e.g.
+  `NormMethod`).
+- When a test passes a deliberately invalid value, silence pyright on that
+  line only: `# pyright: ignore[reportArgumentType]`.
 - Keep functions short and plainly named. Processing functions take a
   `Spectrum` and return a new one (via `Spectrum.with_y`); they never modify
   their input.

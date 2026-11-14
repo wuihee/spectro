@@ -26,6 +26,7 @@ deconvolution of overlapping peaks, and classification of samples by type.
 | Tests | pytest | 1 |
 | Demos and visuals | jupyterlab, ipykernel (dev) | 1 |
 | Formatting and linting | ruff (dev) | 1 |
+| Type checking | pyright (dev) | after 3 |
 | Peak finding, smoothing | scipy.signal | 3 |
 | Baseline correction | pybaselines | 3 |
 | Peak fitting / deconvolution | lmfit | 5 |
@@ -87,3 +88,6 @@ Dependencies are added only when a step's code imports them.
 - **2026-11-10** — Step 3 done. 42 tests passing. Switched the baseline default from AsLS
   (as first planned) to arPLS after comparing both against synthetic ground truth. Known
   limit: very broad bands (O–H, ~300 cm⁻¹ FWHM) lose a little height.
+- **2026-11-13** — Added pyright as a fifth check and fixed the type errors it found.
+  `Spectrum` now has a hand-written `__init__` typed `ArrayLike`, so its type hints
+  match its docstring; `CLAUDE.md` records the typing rules.

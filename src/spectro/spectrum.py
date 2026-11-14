@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, replace
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 
-@dataclass
+@dataclass(init=False)
 class Spectrum:
     """A single 1-D spectrum.
 
@@ -36,13 +37,23 @@ class Spectrum:
 
     x: np.ndarray
     y: np.ndarray
-    x_unit: str = "cm⁻¹"
-    y_unit: str = "absorbance"
-    metadata: dict = field(default_factory=dict)
+    x_unit: str
+    y_unit: str
+    metadata: dict
 
-    def __post_init__(self) -> None:
-        x = np.asarray(self.x, dtype=float)
-        y = np.asarray(self.y, dtype=float)
+    # A hand-written __init__ (rather than the dataclass one plus
+    # __post_init__) so the type hints can say what callers may pass,
+    # array_like, while the fields say what they always get, float arrays.
+    def __init__(
+        self,
+        x: ArrayLike,
+        y: ArrayLike,
+        x_unit: str = "cm⁻¹",
+        y_unit: str = "absorbance",
+        metadata: dict | None = None,
+    ) -> None:
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
 
         if x.ndim != 1 or y.ndim != 1:
             raise ValueError("x and y must be 1-D arrays")
@@ -55,18 +66,21 @@ class Spectrum:
         order = np.argsort(x)
         self.x = x[order]
         self.y = y[order]
+        self.x_unit = x_unit
+        self.y_unit = y_unit
+        self.metadata = {} if metadata is None else metadata
 
     def __len__(self) -> int:
         return self.x.size
 
-    def with_y(self, y: np.ndarray, y_unit: str | None = None) -> Spectrum:
+    def with_y(self, y: ArrayLike, y_unit: str | None = None) -> Spectrum:
         """Return a copy with new y values.
 
         Processing functions use this so they never modify their input.
 
         Parameters
         ----------
-        y : np.ndarray
+        y : array_like
             New signal values, same length as `x`.
         y_unit : str, optional
             New unit for `y`. Defaults to the current unit.

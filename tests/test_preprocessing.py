@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from spectro.preprocessing import (
+    NormMethod,
     estimate_baseline,
     normalize,
     remove_baseline,
@@ -111,7 +112,8 @@ def test_snv_has_zero_mean():
 def test_normalization_removes_overall_scale():
     thin, _ = make_spectrum(PEAKS)
     thick = thin.with_y(3 * thin.y)
-    for method in ["max", "area", "vector", "snv"]:
+    methods: list[NormMethod] = ["max", "area", "vector", "snv"]
+    for method in methods:
         np.testing.assert_allclose(
             normalize(thin, method).y, normalize(thick, method).y
         )
@@ -120,7 +122,7 @@ def test_normalization_removes_overall_scale():
 def test_invalid_normalization_is_rejected():
     spectrum, _ = make_spectrum(PEAKS)
     with pytest.raises(ValueError):
-        normalize(spectrum, "median")
+        normalize(spectrum, "median")  # pyright: ignore[reportArgumentType]
     flat, _ = make_spectrum([])
     with pytest.raises(ValueError):
         normalize(flat, "max")
