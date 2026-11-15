@@ -98,6 +98,20 @@ def pseudo_voigt(
     -----
     PV(x) = η · L(x) + (1 − η) · G(x). Because both parts share `height` and
     `fwhm`, so does the mix, and its area is the same mix of their areas.
+
+    Here η is a free shape parameter, as in Gaussian–Lorentzian curve
+    fitting. The pseudo-Voigt is also used to approximate a true Voigt
+    profile; the Thompson–Cox–Hastings version [1]_ computes η and the FWHM
+    from the Voigt's Gaussian and Lorentzian widths, and Ida et al. [2]_ give
+    a more accurate extended form.
+
+    References
+    ----------
+    .. [1] Thompson, Cox and Hastings, "Rietveld refinement of Debye–Scherrer
+       synchrotron X-ray data from Al₂O₃," J. Appl. Cryst. 20, 79–83 (1987).
+    .. [2] Ida, Ando and Toraya, "Extended pseudo-Voigt function for
+       approximating the Voigt profile," J. Appl. Cryst. 33, 1311–1316
+       (2000).
     """
     return eta * lorentzian(x, center, fwhm, height) + (1 - eta) * gaussian(
         x, center, fwhm, height

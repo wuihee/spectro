@@ -20,6 +20,8 @@ NormMethod = Literal["max", "area", "vector", "snv"]
 
 # Defaults tuned on the 1801-point synthetic grid (400–4000 cm⁻¹, 2 cm⁻¹ step).
 # `lam` is a smoothness penalty whose effect depends on the number of points.
+# pybaselines' own arPLS default is 1e5; 1e7 recovered our synthetic baselines
+# best (see docs/LITERATURE.md).
 BASELINE_DEFAULTS: dict[str, dict] = {
     "arpls": {"lam": 1e7},
     "asls": {"lam": 1e7, "p": 0.01},
@@ -69,7 +71,9 @@ def estimate_baseline(spectrum: Spectrum, method: str = "arpls", **kwargs) -> Sp
     .. [1] S.-J. Baek et al., "Baseline correction using asymmetrically
        reweighted penalized least squares smoothing," Analyst 140,
        250–257 (2015).
-    .. [2] pybaselines documentation, https://pybaselines.readthedocs.io
+    .. [2] Eilers and Boelens, "Baseline correction with asymmetric least
+       squares smoothing," Leiden University Medical Centre report (2005).
+    .. [3] pybaselines documentation, https://pybaselines.readthedocs.io
     """
     fitter = Baseline(x_data=spectrum.x)
     # Every pybaselines method returns (baseline, params).
@@ -146,13 +150,16 @@ def smooth(spectrum: Spectrum, window: int = 11, polyorder: int = 3) -> Spectrum
     There is a trade-off. A wider window removes more noise but, once it
     reaches about the FWHM of a peak, starts to flatten it: height drops and
     width grows. A higher `polyorder` keeps peaks sharper but removes less
-    noise.
+    noise. Edwards and Willson [2]_ recommend a cubic smoothing window of
+    about 0.7 × the FWHM of the narrowest band.
 
     References
     ----------
     .. [1] A. Savitzky and M. J. E. Golay, "Smoothing and differentiation of
        data by simplified least squares procedures," Anal. Chem. 36,
        1627–1639 (1964).
+    .. [2] T. H. Edwards and P. D. Willson, "Digital least squares smoothing
+       of spectra," Appl. Spectrosc. 28, 541–545 (1974).
     """
     if window % 2 == 0:
         raise ValueError("window must be odd")
@@ -180,7 +187,7 @@ def normalize(spectrum: Spectrum, method: NormMethod = "max") -> Spectrum:
         plotting. "area" divides by the integral over `x`. "vector" divides
         by the Euclidean norm. "snv" (standard normal variate) subtracts the
         mean and divides by the standard deviation, common before
-        classification.
+        classification [1]_.
 
     Returns
     -------
@@ -193,6 +200,12 @@ def normalize(spectrum: Spectrum, method: NormMethod = "max") -> Spectrum:
     ValueError
         If `method` is unknown, or the scale it divides by is not positive
         (e.g. an all-zero spectrum).
+
+    References
+    ----------
+    .. [1] Barnes, Dhanoa and Lister, "Standard normal variate transformation
+       and de-trending of near-infrared diffuse reflectance spectra," Appl.
+       Spectrosc. 43, 772–777 (1989).
     """
     y = spectrum.y
     if method == "max":

@@ -111,6 +111,12 @@ class Spectrum:
         ------
         ValueError
             If `y_unit` is not a recognised transmittance or absorbance unit.
+
+        References
+        ----------
+        .. [1] IUPAC Gold Book, "absorbance" and "Beer–Lambert law",
+           https://goldbook.iupac.org/terms/view/A00028 and
+           https://goldbook.iupac.org/terms/view/B00626
         """
         if self.y_unit == "absorbance":
             return self.with_y(self.y.copy())
