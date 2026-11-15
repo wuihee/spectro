@@ -14,8 +14,11 @@ deconvolution of overlapping peaks, and classification of samples by type.
 | Peak parameters | Center, FWHM, height (what you read off a plot); area is computed analytically |
 | Line shapes | Gaussian, Lorentzian, pseudo-Voigt; no true Voigt for now |
 | Baseline method | arPLS by default (`lam=1e7` for ~1800 points); beat AsLS on synthetic data, esp. under broad bands |
-| Smoothing window | In points, not cm⁻¹; keep below narrowest FWHM ÷ point spacing |
+| Smoothing window | In points, not cm⁻¹; about 0.7–1 × narrowest FWHM ÷ point spacing (Edwards & Willson 1974 recommend 0.7) |
 | Preprocessing order | Baseline → smooth → normalise |
+| Peak detection threshold | Prominence ≥ 5 × noise; noise estimated from second differences *before* smoothing, then detect on the smoothed spectrum |
+| Peak center | Parabola through the top three points, so not limited to the point spacing |
+| Second detection method | Minima of the Savitzky–Golay second derivative (window 11, polyorder 4, prominence ≥ 12 × derivative noise), the standard IR way to find shoulders and overlapping bands. Positions only; misses broad bands and needs low noise |
 | Working style | One step at a time; each step = one module + tests + a demo notebook in `notebooks/`. Next step starts only after review. |
 
 ## Libraries
@@ -52,8 +55,12 @@ Dependencies are added only when a step's code imports them.
   SNV). Each records itself in `metadata["preprocessing"]`.
   Files: `src/spectro/preprocessing.py`, `tests/test_preprocessing.py`,
   `notebooks/03_preprocessing.ipynb`
-- [ ] **4. Automatic peak detection.** `find_peaks` + `peak_widths` → peak table
-  (location, width, height). Tested against step 2's true peaks.
+- [x] **4. Automatic peak detection.** `estimate_noise` (robust, from second
+  differences), `detect_peaks` (`scipy.signal.find_peaks` with a prominence threshold +
+  `peak_widths`) → peak table (`center, fwhm, height, prominence`),
+  `detect_peaks_derivative` (second-derivative minima, for shoulders and close overlaps),
+  and `match_peaks` to pair a peak table with step 2's true peaks.
+  Files: `src/spectro/peaks.py`, `tests/test_peaks.py`, `notebooks/04_peak_detection.ipynb`
 - [ ] **5. Peak fitting.** Fit each peak with an lmfit line shape (Gaussian / Lorentzian
   / Voigt / pseudo-Voigt) → center, FWHM, area, intensity with uncertainties.
 - [ ] **6. Deconvolving overlapping peaks.** Fit a sum of peaks over a region, starting
@@ -111,3 +118,24 @@ Dependencies are added only when a step's code imports them.
 - **2026-11-13** — Added pyright as a fifth check and fixed the type errors it found.
   `Spectrum` now has a hand-written `__init__` typed `ArrayLike`, so its type hints
   match its docstring; `CLAUDE.md` records the typing rules.
+- **2026-11-13** — Step 4 done. 61 tests passing. Detecting on unsmoothed noisy data gave
+  false peaks and split the broad O–H band, so the recommended order is: estimate noise,
+  smooth, detect with `prominence=5 * noise`. Over 30 noisy spectra (σ = 0.01) that found
+  every peak with no false ones; narrow-peak centers within ~0.5 cm⁻¹, the O–H center
+  within ~10 cm⁻¹. Known limits: shoulder peaks come out narrow, and equal peaks closer
+  than ~¾ FWHM merge (for step 6).
+- **2026-11-13** — Literature check of step 4: local maxima + noise threshold is the
+  basic standard; in IR, second-derivative minima are the usual way to find overlapping
+  bands (Susi & Byler 1986; Czarnecki 2015 on Savitzky–Golay settings). Added
+  `detect_peaks_derivative`. On synthetic data it finds a shoulder with no dip and
+  separates equal FWHM-20 peaks 10 cm⁻¹ apart (maxima need 16), but misses the 300 cm⁻¹
+  O–H band, and at σ = 0.01 misses most bands. Wavelet (CWT) detection and Fourier
+  self-deconvolution were considered and not added: CWT is mainly used for mass spec,
+  FSD is parameter-sensitive. From now on each step starts with a literature check
+  (rule in `CLAUDE.md`).
+- **2026-11-13** — Literature check of steps 1–3, recorded with sources in
+  `docs/LITERATURE.md`. All main choices are standard. Deviations: arPLS `lam = 1e7`
+  vs. pybaselines' default 1e5 (tuned; recheck in step 9); pseudo-Voigt with one shared
+  FWHM and symmetric bands (simplification; check real bands in step 9). Docstrings now
+  cite Eilers & Boelens (AsLS), Edwards & Willson (smoothing window), Barnes et al.
+  (SNV), Thompson–Cox–Hastings and Ida et al. (pseudo-Voigt) and IUPAC (absorbance).

@@ -10,10 +10,16 @@ in [docs/PLAN.md](docs/PLAN.md); update it at the end of every step.
 - Each step adds one module in `src/spectro/`, one test file in `tests/` and
   one numbered demo notebook in `notebooks/` (e.g. `02_synthetic_data.ipynb`).
   Visuals and demos go in notebooks, not scripts.
+- Before building a step, check the literature for the standard way to do
+  it (search the web; don't rely on memory, and verify every citation). Use
+  the standard method, or record in `docs/PLAN.md` why we deviate. Add the
+  step to [docs/LITERATURE.md](docs/LITERATURE.md) (comparison table and
+  references), and cite the sources in the docstrings' `References`
+  sections.
 - At the end of each step, add a section for it to [docs/STUDY.md](docs/STUDY.md),
-  following the same layout (idea, read, try, design choices, check yourself
-  with folded answers) and update the "ready to move on" checklist and the
-  professor summary. The user is learning the code and will explain the
+  following the same layout (idea, read, try, design choices, literature,
+  check yourself with folded answers) and update the "ready to move on"
+  checklist and the professor summary. The user is learning the code and will explain the
   design choices to their professor.
 - Add a dependency only when the step's code imports it (`uv add <pkg>`,
   or `uv add --dev <pkg>` for tooling).
