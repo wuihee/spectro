@@ -10,5 +10,5 @@ uv run jupyter lab       # demo notebooks in notebooks/
 ```
 
 - [docs/PLAN.md](docs/PLAN.md): plan, decisions and progress
-- [docs/STUDY.md](docs/STUDY.md): study guide for each step
+- [docs/study/](docs/study/README.md): study guide, one file per step
 - [docs/LITERATURE.md](docs/LITERATURE.md): literature check and references for each step

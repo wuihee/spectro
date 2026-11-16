@@ -16,11 +16,14 @@ in [docs/PLAN.md](docs/PLAN.md); update it at the end of every step.
   step to [docs/LITERATURE.md](docs/LITERATURE.md) (comparison table and
   references), and cite the sources in the docstrings' `References`
   sections.
-- At the end of each step, add a section for it to [docs/STUDY.md](docs/STUDY.md),
-  following the same layout (idea, read, try, design choices, literature,
-  check yourself with folded answers) and update the "ready to move on"
-  checklist and the professor summary. The user is learning the code and will explain the
-  design choices to their professor.
+- At the end of each step, add a study file for it in `docs/study/`, named
+  like its notebook (e.g. `05_peak_fitting.md`), following the same layout
+  (idea, read, try, design choices, literature, check yourself with folded
+  answers) and the previous/next links at the bottom. In
+  [docs/study/README.md](docs/study/README.md), add it to the steps table and
+  update the "ready to move on" checklist and the professor summary. The user
+  is learning the code and will explain the design choices to their
+  professor.
 - Add a dependency only when the step's code imports it (`uv add <pkg>`,
   or `uv add --dev <pkg>` for tooling).
 
@@ -31,7 +34,7 @@ uv run pytest                 # tests
 uv run ruff format            # format (src, tests and notebooks)
 uv run ruff check --fix       # lint, including docstring rules
 uv run pyright                # type check src and tests (same engine as Pylance)
-uv run pymarkdown scan *.md docs/*.md   # lint markdown docs
+uv run pymarkdown scan *.md docs/*.md docs/study/*.md   # lint markdown docs
 uv run jupyter lab            # open notebooks
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/<nb>.ipynb
 ```
@@ -129,7 +132,7 @@ notebook's goal, broken into small parts:
   calls and their visual results. Leave out edge cases, validation and
   error handling; the tests cover those.
 
-**Markdown files** (`README.md`, `CLAUDE.md`, `docs/*.md`) must pass
+**Markdown files** (`README.md`, `CLAUDE.md`, `docs/**/*.md`) must pass
 `pymarkdown scan`; its settings are in `pyproject.toml`:
 
 - Wrap prose at 88 characters, like the code. Table rows and code blocks are
@@ -138,4 +141,4 @@ notebook's goal, broken into small parts:
   diagrams).
 - Write table separators with spaces: `| --- | --- |`.
 - Inline HTML is limited to `<details>` and `<summary>` (the folded answers
-  in `STUDY.md`).
+  in the study files).

@@ -139,3 +139,6 @@ Dependencies are added only when a step's code imports them.
   FWHM and symmetric bands (simplification; check real bands in step 9). Docstrings now
   cite Eilers & Boelens (AsLS), Edwards & Willson (smoothing window), Barnes et al.
   (SNV), Thompson–Cox–Hastings and Ida et al. (pseudo-Voigt) and IUPAC (absorbance).
+- **2026-11-15** — Split the study guide into `docs/study/`: a `README.md` with the
+  overview, checklist and professor summary, and one file per step named like its
+  notebook.

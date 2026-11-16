@@ -60,8 +60,8 @@ plugins.md013.line_length = 88          # match ruff
 plugins.md013.heading_line_length = 88
 plugins.md013.tables = false            # table rows can't be wrapped
 plugins.md013.code_blocks = false       # ASCII pipeline diagrams
-plugins.md024.siblings_only = true      # each STUDY.md step repeats "Read", "Try", ...
-plugins.md033.allowed_elements = "details,summary"  # folded answers in STUDY.md
+plugins.md024.siblings_only = true      # each study file repeats "Read", "Try", ...
+plugins.md033.allowed_elements = "details,summary"  # folded answers in docs/study/
 
 [tool.pyright]
 include = ["src", "tests"]
