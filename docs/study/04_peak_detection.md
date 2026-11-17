@@ -151,4 +151,4 @@ Full references:
 
 ---
 
-[← Step 3](03_preprocessing.md) · [← Study guide](README.md)
+[← Step 3](03_preprocessing.md) · [← Study guide](README.md) · [Step 5 →](05_peak_fitting.md)

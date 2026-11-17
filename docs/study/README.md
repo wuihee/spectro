@@ -69,6 +69,7 @@ architecture.
 | 2 | [Synthetic spectra](02_synthetic_data.md) | `notebooks/02_synthetic_data.ipynb` |
 | 3 | [Preprocessing](03_preprocessing.md) | `notebooks/03_preprocessing.ipynb` |
 | 4 | [Peak detection](04_peak_detection.md) | `notebooks/04_peak_detection.ipynb` |
+| 5 | [Peak fitting](05_peak_fitting.md) | `notebooks/05_peak_fitting.ipynb` |
 
 ---
 
@@ -96,6 +97,12 @@ architecture.
 - [ ] For each step, say whether our method is standard in the literature,
       and name one place where we simplified or deviated, and why (see
       `docs/LITERATURE.md`).
+- [ ] Explain what a least-squares fit minimises and why it needs starting
+      values.
+- [ ] Say why we fit the unsmoothed spectrum, and what the coverage test in
+      notebook 05 shows.
+- [ ] Say what a standard error does and doesn't cover (noise, not a wrong
+      model).
 - [ ] Answer every "Check yourself" question in the step files without
       opening the answers.
 
@@ -119,11 +126,16 @@ architecture.
 > the true peak table, and on noisy synthetic spectra it finds every peak
 > with no false ones, centers within about a wavenumber. For low-noise
 > spectra we also find bands as minima of the second derivative, the
-> standard IR way to reveal shoulders and overlapping bands.
+> standard IR way to reveal shoulders and overlapping bands. Each detected
+> peak is then fitted by least squares with a pseudo-Voigt plus a local
+> straight-line background, giving center, width, height, area and line
+> shape, each with a standard error. We fit the unsmoothed spectrum: we
+> checked that the errors then contain the true value about 68 % of the
+> time, as they should, while on smoothed data they're far too small.
 
 Be ready for follow-ups like: *Why pseudo-Voigt and not a true Voigt?* (A
-standard, cheap approximation that is close enough for IR and is what we'll
-fit with later.) *How do you know the generator is correct?* (Tests check
+standard, cheap approximation that is close enough for IR, and its fitted
+η tells us the band shape.) *How do you know the generator is correct?* (Tests check
 height at center, FWHM and area against the formulas for every shape.) *Why
 arPLS and not AsLS or a polynomial?* (On our test spectra it got back the
 true baseline best, and it doesn't need to know where the peaks are.) *How
@@ -133,7 +145,10 @@ points; the tests show the peak flattening once the window is wider.)
 doesn't reject noise wiggles on top of big peaks; prominence does both.)
 *What happens with overlapping peaks?* (Equal peaks closer than about ¾
 FWHM merge into one; the second derivative separates them down to about half
-a FWHM on clean data, and deconvolution in step 6 goes further.) *Are these
+a FWHM on clean data. Fitting overlapping bands one at a time loses 7–30 %
+of their area, so step 6 fits them together.) *How do you know the fit
+uncertainties are right?* (We refit one peak in 100–200 noise realisations
+and count how often the truth falls inside ±1 error: about 70 %.) *Are these
 standard methods?* (Yes, each step was checked against the literature, with
 sources in `docs/LITERATURE.md`. The main deviations are a baseline stiffness
 tuned higher than the library default, and a simplified, symmetric

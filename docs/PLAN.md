@@ -19,6 +19,9 @@ deconvolution of overlapping peaks, and classification of samples by type.
 | Peak detection threshold | Prominence ≥ 5 × noise; noise estimated from second differences *before* smoothing, then detect on the smoothed spectrum |
 | Peak center | Parabola through the top three points, so not limited to the point spacing |
 | Second detection method | Minima of the Savitzky–Golay second derivative (window 11, polyorder 4, prominence ≥ 12 × derivative noise), the standard IR way to find shoulders and overlapping bands. Positions only; misses broad bands and needs low noise |
+| Peak fitting | One pseudo-Voigt (or Gaussian / Lorentzian) + straight-line background per peak, in a ±2 FWHM window cut halfway to neighbours; starting values from detection |
+| Data to fit | The baseline-corrected but **unsmoothed** spectrum: smoothing makes the standard errors far too small and biases heights low |
+| Uncertainties | lmfit standard errors (covariance scaled by reduced χ²); they cover noise only, not a wrong model |
 | Working style | One step at a time; each step = one module + tests + a demo notebook in `notebooks/`. Next step starts only after review. |
 
 ## Libraries
@@ -61,8 +64,12 @@ Dependencies are added only when a step's code imports them.
   `detect_peaks_derivative` (second-derivative minima, for shoulders and close overlaps),
   and `match_peaks` to pair a peak table with step 2's true peaks.
   Files: `src/spectro/peaks.py`, `tests/test_peaks.py`, `notebooks/04_peak_detection.ipynb`
-- [ ] **5. Peak fitting.** Fit each peak with an lmfit line shape (Gaussian / Lorentzian
-  / Voigt / pseudo-Voigt) → center, FWHM, area, intensity with uncertainties.
+- [x] **5. Peak fitting.** `peak_model` / `peak_params` (lmfit models parameterised like
+  `Peak`, with a derived `area`), `fit_peak` (one peak + linear background in a window)
+  and `fit_peaks` (every row of a detection table) → table of center, FWHM, height,
+  area and η, each with a standard error, plus the RMS residual.
+  Files: `src/spectro/fitting.py`, `tests/test_fitting.py`,
+  `notebooks/05_peak_fitting.ipynb`
 - [ ] **6. Deconvolving overlapping peaks.** Fit a sum of peaks over a region, starting
   from step 4 detections; use AIC/BIC to choose the number of peaks. Use synthetic data
   with controlled overlap to find where it breaks down.
@@ -142,3 +149,10 @@ Dependencies are added only when a step's code imports them.
 - **2026-11-15** — Split the study guide into `docs/study/`: a `README.md` with the
   overview, checklist and professor summary, and one file per step named like its
   notebook.
+- **2026-11-15** — Step 5 done. 73 tests passing. Added lmfit. Literature check first:
+  nonlinear least squares with standard profiles is the standard (Maddams 1980). On
+  the noisy synthetic spectrum the isolated bands come back within ~3 % in area and η
+  identifies their shape (0 Gaussian, 1 Lorentzian). Fitting the smoothed spectrum was
+  tested and rejected: standard errors covered the truth 1 % of the time instead of
+  ~68 %, and heights came out ~2 % low. Known limit: the overlapping C–H pair loses
+  7–30 % of its area when fitted one peak at a time (for step 6). True Voigt not added.

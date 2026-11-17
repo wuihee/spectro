@@ -77,6 +77,21 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
 
 ---
 
+## Step 5 · Peak fitting
+
+| What we do | What the literature does | Verdict |
+| --- | --- | --- |
+| Nonlinear least-squares fit of a line shape to each band (Levenberg–Marquardt, via lmfit) | Band fitting by nonlinear least squares is the established method for measuring IR band positions, widths and intensities [30]. A recent IR band tool fits pseudo-Voigt components with Levenberg–Marquardt in lmfit, as we do [33]. | Standard |
+| Gaussian, Lorentzian or pseudo-Voigt (free η) | The three standard profiles; the pseudo-Voigt with a mixing parameter η is the usual cheap stand-in for a Voigt [8], [33]. No true Voigt profile. | Standard; simplification (no Voigt) |
+| Starting values from detection, center bounded to the window, height ≥ 0, 0 ≤ η ≤ 1 | Good starting values and physical bounds are standard practice; Maddams stresses that fits must stay physically plausible and be checked visually, not only by a statistic [30]. | Standard |
+| Straight-line background in each window | The baseline form is one of the things a fit has to specify [30]. A local linear term absorbs leftover baseline and neighbours' tails. | Standard |
+| One peak per window, window ±2 FWHM cut halfway to neighbours | A simplification: overlapping bands should be fitted together [30]. On synthetic data the overlapping C–H pair loses 7–30 % of its area. | Simplification; step 6 |
+| Fit the unsmoothed (baseline-corrected) spectrum | Smoothing makes neighbouring points share noise; fits to such data underestimate parameter uncertainties [31]. Our test agrees: errors cover the truth 72 % of the time on raw data (68 % expected) and 1 % on smoothed data, and smoothing biases the height about 2 % low. | Standard (and tested) |
+| Standard errors from the covariance matrix scaled by reduced χ² | lmfit's default (`scale_covar=True`): with unknown noise, the scale is taken from the residuals [32]. The covariance estimate assumes independent noise and a correct model; it says nothing about systematic error. | Standard, with stated limits |
+| Area from the fitted height, FWHM and η, with propagated error | lmfit computes errors of derived parameters from the covariance matrix [29]. | Standard |
+
+---
+
 ## Deviations and follow-ups
 
 1. **arPLS `lam` (step 3):** 1e7 against a library default of 1e5. It was tuned on
@@ -91,6 +106,10 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
    arPLS struggling with noise.
 5. **Thresholds (step 4):** 5σ and 12σ were set by testing on synthetic noise, not
    taken from the literature. Check false-positive rates on real spectra in step 9.
+6. **One peak per fit (step 5):** overlapping bands lose area when fitted alone, and
+   their reported errors don't show it. Step 6 fits them together.
+7. **No true Voigt (step 5):** only Gaussian, Lorentzian and pseudo-Voigt. Add lmfit's
+   Voigt if real bands need it (step 9).
 
 ---
 
@@ -165,3 +184,16 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
 28. Kauppinen, Moffatt, Mantsch and Cameron, "Fourier
     self-deconvolution: a method for resolving intrinsically overlapped bands," *Appl.
     Spectrosc.* 35, 271–276 (1981). doi:10.1366/0003702814732634
+29. M. Newville et al., "LMFIT: Non-Linear Least-Squares Minimization and Curve-Fitting
+    for Python," version 1.3.4, Zenodo (2025). <https://zenodo.org/record/598352>;
+    documentation <https://lmfit.github.io/lmfit-py/>
+30. W. F. Maddams, "The scope and limitations of curve fitting," *Appl. Spectrosc.* 34,
+    245–267 (1980). doi:10.1366/0003702804730312
+31. "Probabilistic denoising for reliable signal extraction in spectroscopy,"
+    arXiv:2605.07819 (2026). <https://arxiv.org/abs/2605.07819>
+32. lmfit documentation, "Performing fits and analyzing outputs" (`scale_covar`,
+    `stderr`, reduced chi-square). <https://lmfit.github.io/lmfit-py/fitting.html>
+    (checked through a mirror of the docs)
+33. "CosmicPAH-IRDB: A web application for including anharmonicity in simulated PAH
+    spectra for astrophysics," arXiv:2609.01696 (2026).
+    <https://arxiv.org/abs/2609.01696>
