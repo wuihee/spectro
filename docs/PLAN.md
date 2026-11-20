@@ -39,6 +39,7 @@ deconvolution of overlapping peaks, and classification of samples by type.
 | Baseline correction | pybaselines | 3 |
 | Peak fitting / deconvolution | lmfit | 5 |
 | Classification, learning curves | scikit-learn | 7 |
+| Statistical plots in notebooks (scores by model, learning curves, heatmaps) | seaborn (dev) | 7 |
 | Web app | streamlit | 10 |
 
 Dependencies are added only when a step's code imports them.
@@ -90,6 +91,10 @@ Dependencies are added only when a step's code imports them.
   - *Two criteria:* the ML chooses settings for accuracy; peak parameters reported as
     results (areas, positions) are still judged by synthetic ground truth, since a
     setting can help classification while giving physically wrong peaks.
+  - *Plots:* add seaborn as a dev dependency for the statistical plots (scores across
+    folds by model, learning curves with confidence bands, confusion-matrix and
+    grid heatmaps), drawn from tidy results tables. Notebooks only: `plotting.py`
+    stays pure matplotlib so the library and the step 10 app don't need seaborn.
 - [ ] **8. How much data do we need?** Synthetic datasets over a grid of sample size ×
   noise × overlap; learning curves for each classifier and for peak-fitting accuracy.
 - [ ] **9. Testing on real IR spectra.** Run the whole pipeline on measured spectra,
