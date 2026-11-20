@@ -1,7 +1,7 @@
 # Literature check
 
-For each step, this file compares the methods we chose with what the literature does,
-and gives the sources. Numbers in brackets, e.g. [3], point to the
+For each part of the pipeline, this file compares the methods we chose with what the
+literature does, and gives the sources. Numbers in brackets, e.g. [3], point to the
 [reference list](#references) at the end.
 
 How it was checked: by web search in November 2026. Every citation below was confirmed
@@ -21,40 +21,40 @@ Verdicts:
 
 ---
 
-## Step 1 · The `Spectrum` object
+## The `Spectrum` object
 
 | What we do | What the literature does | Verdict |
 | --- | --- | --- |
 | Analyse in absorbance, converting with A = −log₁₀ T | IUPAC defines (decadic) absorbance as log₁₀(P₀/P), and the Beer–Lambert law as A = εcl: absorbance, not transmittance, is proportional to concentration [1], [2]. | Standard |
-| Plain CSV loader now; JCAMP-DX planned for step 9 | JCAMP-DX is the IUPAC standard format for exchanging IR spectra between instruments and software [3], [4]. | Standard plan |
+| Plain CSV loader now; JCAMP-DX planned | JCAMP-DX is the IUPAC standard format for exchanging IR spectra between instruments and software [3], [4]. | Standard plan |
 | Wavenumber in cm⁻¹, plotted high to low | The usual convention for IR spectra. | Not a method choice |
 | Sort points by wavenumber; clip T at 10⁻⁶ before the log | Implementation details. | Not a method choice |
 
-Note for step 9: IUPAC states that the Beer–Lambert law holds only when the
+Note for real spectra: IUPAC states that the Beer–Lambert law holds only when the
 instrument's spectral bandwidth is narrow compared with the bands [2]. Very strong
-(saturated) bands break it, which is one of the step 9 checks.
+(saturated) bands break it, so measured spectra need checking for them.
 
 ---
 
-## Step 2 · Synthetic spectra
+## Synthetic spectra
 
 | What we do | What the literature does | Verdict |
 | --- | --- | --- |
 | Test methods on synthetic spectra with known peaks | Method papers do the same. The arPLS paper compares baseline methods on simulated as well as measured spectra [5]. An adaptive Savitzky–Golay study uses simulated signals with Gaussian, Lorentzian and Voigt profiles [6]. | Standard |
 | Gaussian, Lorentzian and pseudo-Voigt line shapes | IR curve fitting uses Gaussian–Lorentzian mixtures, or the Voigt profile when the two widths are allowed to differ. Gaussian is usual for solids, Lorentzian for gases (instrument maker's application note, a secondary source [7]). | Standard |
 | Pseudo-Voigt as η·L + (1 − η)·G with one shared FWHM | The pseudo-Voigt approximates the Voigt profile. The Thompson–Cox–Hastings version computes η and the FWHM from the Gaussian and Lorentzian widths of a true Voigt [8]. Ida et al. give a more accurate extended version [9]. Our η is a free shape parameter, as in Gaussian–Lorentzian curve fitting. | Simplification |
-| Symmetric bands only | Condensed-phase bands can be asymmetric. Fitting them with a symmetric or naively skewed pseudo-Voigt can shift the fitted center away from the band maximum [10]. | Simplification; check in step 9 |
-| White Gaussian noise and a polynomial baseline | Simple, common models. Real noise and baselines are more varied (water vapour, CO₂, scattering), which step 9 tests. | Simplification |
+| Symmetric bands only | Condensed-phase bands can be asymmetric. Fitting them with a symmetric or naively skewed pseudo-Voigt can shift the fitted center away from the band maximum [10]. | Simplification; check on real spectra |
+| White Gaussian noise and a polynomial baseline | Simple, common models. Real noise and baselines are more varied (water vapour, CO₂, scattering); still to be tested on measured spectra. | Simplification |
 | Peaks described by center, FWHM and height; area computed | The usual band parameters. The area factors (√(π / 4 ln 2) for Gaussian, π/2 for Lorentzian) are exact integrals. | Standard |
 
 ---
 
-## Step 3 · Preprocessing
+## Preprocessing
 
 | What we do | What the literature does | Verdict |
 | --- | --- | --- |
 | arPLS baseline by default (pybaselines) | arPLS [5] gave a lower error than AsLS and airPLS on simulated and measured Raman spectra and was less sensitive to the choice of λ. Its weights adapt to an iteratively estimated noise level. AsLS [11] uses one fixed asymmetry and can sit too high or low when there is noise [5]. Both build on Eilers' penalised least-squares (Whittaker) smoother [12]. Our own comparison on synthetic spectra agreed. | Standard |
-| arPLS `lam = 1e7` | pybaselines' default for arPLS is 1e5 [13]. Other implementations suggest searching by orders of magnitude, about 10⁵–10⁸ [14] or 10²–10⁹ [15], and tuning it to the data. We set 1e7 by testing on our 1801-point grid. | Standard, tuned; recheck on real data in step 9 |
+| arPLS `lam = 1e7` | pybaselines' default for arPLS is 1e5 [13]. Other implementations suggest searching by orders of magnitude, about 10⁵–10⁸ [14] or 10²–10⁹ [15], and tuning it to the data. We set 1e7 by testing on our 1801-point grid. | Standard, tuned; recheck on real data |
 | AsLS `p = 0.01` | Suggested values are 0.001–0.1 [14], [15]; pybaselines' default is 0.01 [13]. | Standard |
 | Savitzky–Golay smoothing | The standard polynomial smoothing filter [16], listed among the most common spectral pre-processing techniques [17]. Alternatives exist: the Whittaker smoother [12], and a recent paper arguing for replacing Savitzky–Golay filters [18]. | Standard |
 | Window below the narrowest FWHM in points; default 11 points (20 cm⁻¹, 0.8 × a 25 cm⁻¹ band) with a cubic polynomial | Edwards and Willson recommend a cubic smoothing range of about 0.7 × the FWHM of the narrowest band, to keep resolution [19]. Our default sits just above that; our rule ("below the FWHM") is slightly looser. | Standard; docstring now cites 0.7 × FWHM |
@@ -63,7 +63,7 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
 
 ---
 
-## Step 4 · Peak detection
+## Peak detection
 
 | What we do | What the literature does | Verdict |
 | --- | --- | --- |
@@ -73,11 +73,11 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
 | Center from a parabola through the top three points | Common sub-sample peak interpolation. | Standard |
 | Minima of the Savitzky–Golay second derivative | The usual way to locate overlapping IR bands, e.g. the components of the protein amide I band [25]. The resolution gained depends on point spacing, window, polynomial order and band shape; a small window and high polynomial order maximise it, at a cost in noise [26]. Derivatives are one of the two main pre-processing families in the NIR review [17]. | Standard |
 | Not used: continuous wavelet transform (CWT) | Matches the spectrum against peak-shaped wavelets at many widths [27]. Developed for mass spectrometry. | Could be compared later |
-| Not used: Fourier self-deconvolution (FSD) | Narrows bands mathematically before finding peaks [28]. Classic in IR, but noise limits how far bands can be narrowed. | Steps 5–6 (fitting) cover the same need |
+| Not used: Fourier self-deconvolution (FSD) | Narrows bands mathematically before finding peaks [28]. Classic in IR, but noise limits how far bands can be narrowed. | Peak fitting and deconvolution cover the same need |
 
 ---
 
-## Step 5 · Peak fitting
+## Peak fitting
 
 | What we do | What the literature does | Verdict |
 | --- | --- | --- |
@@ -85,14 +85,14 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
 | Gaussian, Lorentzian or pseudo-Voigt (free η) | The three standard profiles; the pseudo-Voigt with a mixing parameter η is the usual cheap stand-in for a Voigt [8], [33]. No true Voigt profile. | Standard; simplification (no Voigt) |
 | Starting values from detection, center bounded to the window, height ≥ 0, 0 ≤ η ≤ 1 | Good starting values and physical bounds are standard practice; Maddams stresses that fits must stay physically plausible and be checked visually, not only by a statistic [30]. | Standard |
 | Straight-line background in each window | The baseline form is one of the things a fit has to specify [30]. A local linear term absorbs leftover baseline and neighbours' tails. | Standard |
-| One peak per window, window ±2 FWHM cut halfway to neighbours | A simplification: overlapping bands should be fitted together [30]. On synthetic data the overlapping C–H pair loses 7–30 % of its area. | Simplification; step 6 |
+| One peak per window, window ±2 FWHM cut halfway to neighbours | A simplification: overlapping bands should be fitted together [30]. On synthetic data the overlapping C–H pair loses 7–30 % of its area. | Simplification; fixed by deconvolution |
 | Fit the unsmoothed (baseline-corrected) spectrum | Smoothing makes neighbouring points share noise; fits to such data underestimate parameter uncertainties [31]. Our test agrees: errors cover the truth 72 % of the time on raw data (68 % expected) and 1 % on smoothed data, and smoothing biases the height about 2 % low. | Standard (and tested) |
 | Standard errors from the covariance matrix scaled by reduced χ² | lmfit's default (`scale_covar=True`): with unknown noise, the scale is taken from the residuals [32]. The covariance estimate assumes independent noise and a correct model; it says nothing about systematic error. | Standard, with stated limits |
 | Area from the fitted height, FWHM and η, with propagated error | lmfit computes errors of derived parameters from the covariance matrix [29]. | Standard |
 
 ---
 
-## Step 6 · Deconvolving overlapping peaks
+## Deconvolving overlapping peaks
 
 | What we do | What the literature does | Verdict |
 | --- | --- | --- |
@@ -101,37 +101,37 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
 | Choose the number of peaks with an information criterion (BIC by default, AIC available) | AIC [35] and BIC [36] are the standard criteria for choosing a model's size. BIC has been used to choose the number of peaks in automatic spectral decomposition [38]; an ice-band study with JWST used AIC the same way [39]. lmfit computes both from χ² [32]. | Standard |
 | BIC rather than AIC by default | BIC charges ln N per parameter instead of 2, so it adds components only on stronger evidence; ΔBIC above 6–10 is "strong" to "very strong" on Kass and Raftery's scale [37]. Our tests agree: on a noisy spectrum without baseline problems AIC added a fourth, non-existent peak where BIC kept the right three. | Standard (and tested) |
 | Candidate models from detection, plus extra peaks at the largest residual bump or by splitting a peak | The literature proposes components from resolution-enhanced spectra (second derivative or FSD) before fitting [25], [38]. Our residual and split starts are a simple search over starting values; the criterion then judges them. `detect_peaks_derivative` can supply the starting table instead. | Simplification |
-| Standard errors from the joint fit | As in step 5. Strongly overlapping peaks are correlated, and the errors grow to show it. The fit is maximum-likelihood only when the model is correct and the noise random; model error and systematic data error (e.g. leftover baseline) bias the bands in ways the errors don't show [40]. Our test: joint errors cover the truth 70–75 % of the time when the model is right; a curved baseline leftover made BIC add a spurious wide component. | Standard, with stated limits |
+| Standard errors from the joint fit | As in peak fitting. Strongly overlapping peaks are correlated, and the errors grow to show it. The fit is maximum-likelihood only when the model is correct and the noise random; model error and systematic data error (e.g. leftover baseline) bias the bands in ways the errors don't show [40]. Our test: joint errors cover the truth 70–75 % of the time when the model is right; a curved baseline leftover made BIC add a spurious wide component. | Standard, with stated limits |
 | Not used: Bayesian spectral deconvolution with marginal likelihood | Estimates the number of peaks and the noise together by sampling, avoiding both over- and under-fitting [41]. More robust, much slower. | Could be compared later |
 
 ---
 
 ## Deviations and follow-ups
 
-1. **arPLS `lam` (step 3):** 1e7 against a library default of 1e5. It was tuned on
-   synthetic data; check again on real spectra in step 9.
-2. **Pseudo-Voigt (steps 2, 5):** a shared-FWHM mixture, not a TCH-style Voigt
-   approximation, and symmetric. Fine for synthetic data and as a fitting model; check
-   real bands for asymmetry in step 9.
-3. **Smoothing window (step 3):** the literature optimum is ~0.7 × FWHM [19]; the
+1. **arPLS `lam` (preprocessing):** 1e7 against a library default of 1e5. It was
+   tuned on synthetic data; check again on real spectra.
+2. **Pseudo-Voigt (synthetic spectra, peak fitting):** a shared-FWHM mixture, not a
+   TCH-style Voigt approximation, and symmetric. Fine for synthetic data and as a
+   fitting model; check real bands for asymmetry.
+3. **Smoothing window (preprocessing):** the literature optimum is ~0.7 × FWHM [19]; the
    docstring rule is now stated that way.
-4. **Pre-processing order (step 3):** normalising last is well supported; whether to
-   smooth before or after baseline removal is a choice. Revisit if real data show
-   arPLS struggling with noise.
-5. **Thresholds (step 4):** 5σ and 12σ were set by testing on synthetic noise, not
-   taken from the literature. Check false-positive rates on real spectra in step 9.
-6. **One peak per fit (step 5):** overlapping bands lose area when fitted alone, and
-   their reported errors don't show it. Step 6 fits them together.
-7. **No true Voigt (step 5):** only Gaussian, Lorentzian and pseudo-Voigt. Add lmfit's
-   Voigt if real bands need it (step 9).
-8. **Candidate peaks (step 6):** extra components are proposed from the residual or by
-   splitting a peak, not from a resolution-enhanced spectrum as is usual. Compare with
-   starting from `detect_peaks_derivative` on real low-noise data (step 9).
-9. **Baseline leftover and model choice (step 6):** at noise σ = 0.01, arPLS leaves a
-   curved dip of up to ~0.045 under the broad O–H band; the straight-line background
-   can't follow it, and BIC adds a wide spurious component that takes 9–22 % of the C–H
-   areas. Revisit baseline removal on noisy spectra (step 3 settings) or allow a
-   curved region background, and check on real spectra (step 9).
+4. **Pre-processing order (preprocessing):** normalising last is well supported;
+   whether to smooth before or after baseline removal is a choice. Revisit if real
+   data show arPLS struggling with noise.
+5. **Thresholds (peak detection):** 5σ and 12σ were set by testing on synthetic
+   noise, not taken from the literature. Check false-positive rates on real spectra.
+6. **One peak per fit (peak fitting):** overlapping bands lose area when fitted
+   alone, and their reported errors don't show it. Deconvolution fits them together.
+7. **No true Voigt (peak fitting):** only Gaussian, Lorentzian and pseudo-Voigt. Add
+   lmfit's Voigt if real bands need it.
+8. **Candidate peaks (deconvolution):** extra components are proposed from the
+   residual or by splitting a peak, not from a resolution-enhanced spectrum as is
+   usual. Compare with starting from `detect_peaks_derivative` on real low-noise data.
+9. **Baseline leftover and model choice (deconvolution):** at noise σ = 0.01, arPLS
+   leaves a curved dip of up to ~0.045 under the broad O–H band; the straight-line
+   background can't follow it, and BIC adds a wide spurious component that takes
+   9–22 % of the C–H areas. Revisit baseline removal on noisy spectra (arPLS
+   settings) or allow a curved region background, and check on real spectra.
 
 ---
 

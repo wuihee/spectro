@@ -1,4 +1,4 @@
-# Step 5 · Peak fitting
+# Peak fitting
 
 ## The idea
 
@@ -25,7 +25,7 @@ is independent of its neighbours', which smoothing breaks.
 1. `src/spectro/fitting.py`: start with `fit_peak` and its `Notes` (what is
    minimised, where the errors come from, why not smoothed data). Then
    `fit_peaks` and its `Notes` (the overlap limit). `peak_model` and
-   `peak_params` build the lmfit model and its bounds; step 6 will reuse
+   `peak_params` build the lmfit model and its bounds; `deconvolution.py` reuses
    them to add several peaks together.
 2. `tests/test_fitting.py`: note `test_errors_match_scatter_over_noise_realisations`,
    which checks the uncertainties themselves, not just the values.
@@ -61,7 +61,7 @@ is independent of its neighbours', which smoothing breaks.
 
 | Choice | Why |
 | --- | --- |
-| lmfit rather than `scipy.optimize.curve_fit` | Named parameters with bounds, derived parameters (area) with propagated errors, and models that add together, which step 6 needs. It uses SciPy's Levenberg–Marquardt underneath. |
+| lmfit rather than `scipy.optimize.curve_fit` | Named parameters with bounds, derived parameters (area) with propagated errors, and models that add together, which deconvolution needs. It uses SciPy's Levenberg–Marquardt underneath. |
 | Our own line shapes, parameterised by center, FWHM and height | The same functions that made the synthetic data, so fitted values compare directly with the true peak table, and a fitted row can be rebuilt as a `Peak`. lmfit's built-in models use amplitude (area) and σ instead. |
 | Area as a derived parameter | It is fixed by height, FWHM and η, so it isn't fitted separately, but lmfit still reports its error. |
 | Pseudo-Voigt by default, with η free | One model covers Gaussian, Lorentzian and anything between, and η says which. On the notebook spectrum it returns 0 for the Gaussian band and 1 for the Lorentzian one. |
@@ -70,7 +70,7 @@ is independent of its neighbours', which smoothing breaks.
 | Bounds: center inside the window, height ≥ 0, 0 ≤ η ≤ 1 | Keeps the fit physical and stops it wandering onto another peak. |
 | Fit unsmoothed data | Tested: on raw data the errors cover the truth 72 % of the time (68 % expected); on smoothed data 1 %, and heights come out 2 % low. |
 | Errors scaled by the residuals (lmfit default) | We don't know the noise in advance; the residuals measure it. `rms_residual` is reported so you can compare it with `estimate_noise`. |
-| One peak per fit | Simple and enough for isolated bands. Overlapping bands lose area this way; step 6 fits them together. |
+| One peak per fit | Simple and enough for isolated bands. Overlapping bands lose area this way; deconvolution fits them together. |
 
 ## Literature
 
@@ -80,10 +80,10 @@ is independent of its neighbours', which smoothing breaks.
 | Linear background, physical bounds, visual check of residuals | Maddams names the baseline form as part of the model, and asks that fits be plausible and checked by eye, not only by a statistic. | Standard. |
 | Fit unsmoothed data | Smoothing correlates the noise, and fits then underestimate uncertainties; our test shows the same. | Standard, and tested. |
 | Errors from the covariance matrix scaled by reduced χ² | lmfit's default when the noise isn't known. Assumes independent noise and a correct model. | Standard, with stated limits. |
-| One peak at a time; no true Voigt | Overlapping bands should be fitted together; the Voigt is the physical profile, the pseudo-Voigt an approximation. | Simplifications; step 6 and step 9. |
+| One peak at a time; no true Voigt | Overlapping bands should be fitted together; the Voigt is the physical profile, the pseudo-Voigt an approximation. | Simplifications; deconvolution fixes the first, real spectra will test the second. |
 
 Full references:
-[LITERATURE.md, step 5](../LITERATURE.md#step-5--peak-fitting).
+[LITERATURE.md, Peak fitting](../LITERATURE.md#peak-fitting).
 
 ## Check yourself
 
@@ -121,7 +121,7 @@ Full references:
 6. That it matches how much the value really varies with fresh noise, so
    the truth lies within ±1 error about 68 % of the time. The test fits 100
    noise realisations and counts how often that happens.
-7. Leftover baseline from step 3 and the tails of nearby peaks add a slowly
+7. Leftover baseline from baseline removal and the tails of nearby peaks add a slowly
    varying offset under the peak. A line absorbs it so the peak parameters
    don't have to.
 8. The errors only describe noise, assuming the model is right. Here the
@@ -134,4 +134,4 @@ Full references:
 
 ---
 
-[← Step 4](04_peak_detection.md) · [← Study guide](README.md) · [Step 6 →](06_deconvolution.md)
+[← Peak detection](04_peak_detection.md) · [← Study guide](README.md) · [Deconvolution →](06_deconvolution.md)

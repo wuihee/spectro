@@ -1,4 +1,4 @@
-# Step 3 · Preprocessing
+# Preprocessing
 
 ## The idea
 
@@ -12,9 +12,9 @@ returns a new one, so they chain:
          (drift away)        (noise down)  (scale removed)
 ```
 
-Because step 2 lets us build the same spectrum with and without baseline and
-noise, every function is tested by asking: *does it give back the clean
-spectrum?*
+Because the synthetic generator lets us build the same spectrum with and
+without baseline and noise, every function is tested by asking: *does it give
+back the clean spectrum?*
 
 ## Read
 
@@ -41,13 +41,13 @@ spectrum?*
 
 | Choice | Why |
 | --- | --- |
-| Separate small functions, not one `preprocess()` | Each step can be swapped, skipped or reordered, and tested on its own. Plain function calls chain clearly enough; a pipeline helper can come later if needed. |
+| Separate small functions, not one `preprocess()` | Each function can be swapped, skipped or reordered, and tested on its own. Plain function calls chain clearly enough; a pipeline helper can come later if needed. |
 | arPLS as the default baseline (via pybaselines) | On our synthetic spectra it got back the true baseline best at every noise level. AsLS (the classic choice) sits below the true baseline when there is noise and rides up under the broad O–H band. Other pybaselines methods are one argument away. |
 | `estimate_baseline` is public | So you can plot the baseline over the raw spectrum and check it by eye, which is how baseline correction is judged on real data. |
 | `lam` default of 1e7, tuned on 1801 points | `lam` is a stiffness penalty whose effect depends on how many points there are. A fixed, documented default is simpler than auto-scaling; change it for very different data. |
 | Savitzky–Golay smoothing | It fits a local polynomial, so it keeps peak height and width far better than a moving average for the same noise reduction. |
 | Smoothing window in **points**, not cm⁻¹ | That's what the filter actually uses and it doesn't assume evenly spaced data. The docstring says how to convert: keep it below FWHM ÷ point spacing. |
-| Four normalisations | "max" for plotting, "area" and "vector" for comparing samples, "snv" for classification (step 7). |
+| Four normalisations | "max" for plotting, "area" and "vector" for comparing samples, "snv" for classification. |
 | `y_unit` records the normalisation | "absorbance (max-normalized)" stops a normalised spectrum from being mistaken for real absorbance, and the plot label says so. |
 | History in `metadata["preprocessing"]` | A processed spectrum says how it was made, which matters when comparing results later. |
 | Order: baseline → smooth → normalise | Normalising first divides by a value that includes the baseline, so identical samples with different backgrounds end up at different scales (notebook part 4). |
@@ -56,12 +56,12 @@ spectrum?*
 
 All four techniques are standard. arPLS beat AsLS in its original paper,
 as in our own tests. Our `lam = 1e7` is higher than pybaselines' default of
-1e5; it was tuned on our grid and gets rechecked on real data in step 9.
+1e5; it was tuned on our grid and still needs rechecking on real data.
 Edwards and Willson recommend a smoothing window of about 0.7 × the
 narrowest FWHM, close to our default (0.8). Normalising last is the
 consensus; whether to smooth before or after baseline removal varies
 between sources. Details and sources:
-[LITERATURE.md, step 3](../LITERATURE.md#step-3--preprocessing).
+[LITERATURE.md, Preprocessing](../LITERATURE.md#preprocessing).
 
 ## Check yourself
 
@@ -105,4 +105,5 @@ between sources. Details and sources:
 
 ---
 
-[← Step 2](02_synthetic_data.md) · [← Study guide](README.md) · [Step 4 →](04_peak_detection.md)
+[← Synthetic spectra](02_synthetic_data.md) · [← Study guide](README.md) ·
+[Peak detection →](04_peak_detection.md)

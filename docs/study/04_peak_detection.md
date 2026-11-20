@@ -1,9 +1,9 @@
-# Step 4 · Peak detection
+# Peak detection
 
 ## The idea
 
 Find each peak automatically and read off its center, FWHM and height,
-giving a peak table with the same columns as step 2's answer key. The hard
+giving a peak table with the same columns as the synthetic answer key. The hard
 part is not finding maxima (noise makes hundreds) but deciding which ones
 are real. A maximum counts as a peak only if it stands out by more than a
 few times the noise:
@@ -71,13 +71,13 @@ and broad bands almost vanish.
 | Center from a parabola through the top three points | The grid is 2 cm⁻¹; the parabola puts the center between points, to within ~0.1 cm⁻¹ on clean data. Cheap, no fitting needed. |
 | FWHM from `peak_widths` at half prominence, interpolated | Interpolating the half-height crossings gives sub-point widths. Measuring from the prominence base handles peaks on top of broader bands. |
 | Same column names as the true peak table | Detection and truth line up by name, so `match_peaks` can compare them directly. |
-| `match_peaks` pairs closest first, each peak used once | Two detections can't both claim the same true peak; leftovers are reported as missed or false. The same function will match against literature bands in step 9. |
+| `match_peaks` pairs closest first, each peak used once | Two detections can't both claim the same true peak; leftovers are reported as missed or false. The same function can match against literature bands on real spectra. |
 | Add a second-derivative method | It is the standard IR way to find shoulders and overlapping bands, and the maxima method can't. On clean data it separates equal peaks half a FWHM apart (maxima need ~¾ FWHM). |
 | Two separate functions, not one with a `method` argument | They take different input (smoothed vs. unsmoothed) and different settings (window, polyorder), and the derivative one can't give a FWHM. |
 | Derivative via Savitzky–Golay, window 11, polyorder 4 | Neighbour differences are far too noisy. Czarnecki (2015) found a small window and high polynomial order keep the dips narrowest; a wider window copes with more noise but blurs close bands. |
 | Derivative threshold 12 × the noise *after* the filter | The filter's effect on noise is computed exactly from its coefficients. 12 was set on pure synthetic noise, where 8 still gave the odd false band. |
-| Derivative method gives no FWHM | The width of a dip in the derivative of overlapping bands isn't a reliable width. Fitting (step 5) gives widths. |
-| No fitting yet | Detection gives a quick estimate and a starting point. Exact parameters and areas, and separating overlapping peaks, come from fitting (steps 5–6). |
+| Derivative method gives no FWHM | The width of a dip in the derivative of overlapping bands isn't a reliable width. Fitting (`fit_peaks`) gives widths. |
+| No fitting yet | Detection gives a quick estimate and a starting point. Exact parameters and areas, and separating overlapping peaks, come from fitting and deconvolution. |
 
 ## Literature
 
@@ -88,10 +88,10 @@ and broad bands almost vanish.
 | Robust noise from the median absolute deviation | The MAD is a standard robust estimate of spread; wavelet denoising estimates noise the same way, from high-frequency parts of the signal. | Standard. |
 | Minima of the Savitzky–Golay second derivative | The usual way to locate overlapping IR bands, e.g. protein amide I components (Susi & Byler, 1986). Czarnecki (2015) studies how the window and polynomial order affect it. | Standard, with known limits (noise, broad bands). |
 | Not used: continuous wavelet transform (CWT) | Matches the spectrum against peak-shaped wavelets at many widths (Du, Kibbe & Lin, 2006). Popular in mass spectrometry; available as `scipy.signal.find_peaks_cwt`. | Less common for IR; could be compared later. |
-| Not used: Fourier self-deconvolution (FSD) | Narrows all bands mathematically before finding peaks (Kauppinen et al., 1981). Classic in IR. | Sensitive to its settings and can create false bands; fitting (steps 5–6) covers the same need. |
+| Not used: Fourier self-deconvolution (FSD) | Narrows all bands mathematically before finding peaks (Kauppinen et al., 1981). Classic in IR. | Sensitive to its settings and can create false bands; fitting and deconvolution cover the same need. |
 
 Full references:
-[LITERATURE.md, step 4](../LITERATURE.md#step-4--peak-detection).
+[LITERATURE.md, Peak detection](../LITERATURE.md#peak-detection).
 
 ## Check yourself
 
@@ -132,7 +132,7 @@ Full references:
    half the prominence, which is measured from the shoulder, so only the
    top of the peak is counted.
 7. One wider peak between them, because there's no dip left. Deconvolution
-   (step 6): fit a sum of two peak shapes to the region.
+   (`deconvolve`): fit a sum of two peak shapes to the region.
 8. Detected centers never equal the truth exactly, so "the same peak" means
    "within some distance". The broad O–H band has a flat top, so noise moves
    its detected center by up to ~10–15 cm⁻¹; narrow peaks are within ~1.
@@ -151,4 +151,4 @@ Full references:
 
 ---
 
-[← Step 3](03_preprocessing.md) · [← Study guide](README.md) · [Step 5 →](05_peak_fitting.md)
+[← Preprocessing](03_preprocessing.md) · [← Study guide](README.md) · [Peak fitting →](05_peak_fitting.md)

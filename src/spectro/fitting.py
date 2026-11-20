@@ -1,12 +1,12 @@
 """Fit line shapes to detected peaks to measure them with uncertainties.
 
-Detection (step 4) reads center, FWHM and height straight off the data
+Detection (`spectro.peaks`) reads center, FWHM and height straight off the data
 points. Fitting adjusts a smooth line shape until it matches the data as
 closely as possible (least squares), which uses every point across the
 peak, gives the area and line shape too, and estimates how uncertain each
 value is. Each peak is fitted on its own, in a window around it, on top of
 a straight-line background. Fitting several overlapping peaks together is
-step 6.
+handled by `spectro.deconvolution`.
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ def peak_model(shape: Shape = "pseudo_voigt", prefix: str = "") -> lmfit.Model:
         Line shape; see `spectro.lineshapes`.
     prefix : str, default ""
         Prefix for the parameter names, e.g. ``"p1_"``, so several peaks can
-        be added into one model (step 6).
+        be added into one model (see `spectro.deconvolution`).
 
     Returns
     -------
@@ -148,7 +148,7 @@ def fit_peak(
     -----
     The fit minimises Σ (yᵢ − f(xᵢ))² with the Levenberg–Marquardt
     algorithm. The background term a + b·(x − center) soaks up any baseline
-    left over after step 3 and the tails of nearby peaks.
+    left over after baseline removal and the tails of nearby peaks.
 
     Standard errors come from the covariance matrix of the fit, scaled by
     the reduced chi-square, i.e. by the noise level the residuals show.
@@ -226,7 +226,7 @@ def fit_peaks(
     -----
     Peaks that overlap strongly are fitted poorly this way, because each fit
     sees the other peak only as background; their areas come out too small.
-    Step 6 fits them together.
+    `spectro.deconvolution.deconvolve` fits them together.
 
     Examples
     --------

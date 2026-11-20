@@ -1,8 +1,8 @@
 """Build synthetic spectra from a list of peaks, with a known true answer.
 
 Every generated spectrum comes with a table of the peaks used to make it,
-so later steps (peak detection, fitting, deconvolution) can be checked
-against the truth.
+so the analysis functions (peak detection, fitting, deconvolution) can be
+checked against the truth.
 """
 
 from __future__ import annotations

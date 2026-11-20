@@ -1,9 +1,10 @@
 """Separate overlapping peaks by fitting them together, and choose how many there are.
 
-Step 5 fits each peak on its own, so a peak that overlaps another sees it
-only as background and loses area. Here the peaks whose fit windows overlap
-are grouped into a region, and all peaks in a region are fitted at once, as
-a sum of line shapes on a shared straight-line background. How many peaks a
+`spectro.fitting.fit_peaks` fits each peak on its own, so a peak that
+overlaps another sees it only as background and loses area. Here the peaks
+whose fit windows overlap are grouped into a region, and all peaks in a
+region are fitted at once, as a sum of line shapes on a shared
+straight-line background. How many peaks a
 region holds is not taken on trust from detection: models with different
 numbers of peaks are fitted and compared with an information criterion (BIC
 by default), which rewards a better fit but charges for every extra
@@ -328,10 +329,10 @@ def deconvolve(
 
     A criterion only says the data need another component, not that it is
     a band. Anything the model can't describe, such as baseline left over
-    from step 3 that isn't a straight line across the region, also gets
-    absorbed by an extra component, which then takes area from the real
-    bands [1]_. Check each added peak against the spectrum and against the
-    bands the sample should have.
+    after baseline removal that isn't a straight line across the region,
+    also gets absorbed by an extra component, which then takes area from the
+    real bands [1]_. Check each added peak against the spectrum and against
+    the bands the sample should have.
 
     The criterion can only choose between the models it is offered, and
     each fit starts from detection, the residual or a split peak. If two

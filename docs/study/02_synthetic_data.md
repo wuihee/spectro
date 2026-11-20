@@ -1,11 +1,11 @@
-# Step 2 · Synthetic spectra
+# Synthetic spectra
 
 ## The idea
 
 We describe a spectrum as a **list of peaks** (each with a center, width,
 height and shape), add them together, then add a baseline and noise. Because
 we built it, we know the true peaks exactly, and we keep them in a table.
-That table is the "answer key" for testing every later step.
+That table is the "answer key" for testing every analysis function.
 
 ```text
    [Peak, Peak, Peak]  ──►  sum of curves  ──►  + baseline  ──►  + noise  ──►  Spectrum
@@ -41,9 +41,9 @@ match: Lorentzian area ≈ 1.5 × Gaussian area.
 
 - Change `eta` from 0 to 1 on a pseudo-Voigt peak and watch the tails change.
 - Move two peaks closer together until you can no longer see two bumps. (This
-  is the problem step 6 solves.)
+  is the problem deconvolution solves.)
 - Increase `noise` until a small peak disappears into it. (This matters for
-  step 4.)
+  peak detection.)
 - Build the same spectrum twice with the same `seed`, then with different
   seeds. What changes?
 - Compare `peak.area` with `np.trapezoid(peak.evaluate(x), x)` for a
@@ -54,12 +54,12 @@ match: Lorentzian area ≈ 1.5 × Gaussian area.
 | Choice | Why |
 | --- | --- |
 | Build synthetic data *before* any analysis | It gives us ground truth. Without it, we can't measure whether peak detection or fitting is accurate. |
-| `make_spectrum` returns the spectrum **and** the true peak table | The answer key travels with the data. Later steps output tables with the same columns, so comparison is row by row. |
+| `make_spectrum` returns the spectrum **and** the true peak table | The answer key travels with the data. Detection and fitting output tables with the same columns, so comparison is row by row. |
 | Describe peaks by center, FWHM, height | These are what you read off a plot, so peak lists are easy to write and check. Area is derived with an exact formula. |
 | Three line shapes, pseudo-Voigt by default | Covers the physically relevant cases. Pseudo-Voigt is the standard approximation for IR and needs no extra library. |
 | Baseline as polynomial on x rescaled to 0–1 | Coefficients are in absorbance units ("rises by 0.1 across the spectrum"), regardless of the x range. |
 | Noise with a `seed` | Experiments are reproducible: the same seed gives the same spectrum. |
-| No random variation or sample classes yet | Kept for steps 7–8. Step 2 only needs to make one spectrum well. |
+| No random variation or sample classes yet | Not needed yet: one spectrum has to be made well first. Varied datasets with sample classes come with classification. |
 
 ## Literature
 
@@ -69,12 +69,12 @@ shapes. Two simplifications: our pseudo-Voigt shares one FWHM between its
 parts (the Thompson–Cox–Hastings version derives it from a true Voigt), and
 all bands are symmetric, while real condensed-phase bands can be skewed.
 Details and sources:
-[LITERATURE.md, step 2](../LITERATURE.md#step-2--synthetic-spectra).
+[LITERATURE.md, Synthetic spectra](../LITERATURE.md#synthetic-spectra).
 
 ## Check yourself
 
 1. Why build a synthetic generator before building peak detection?
-2. What's in the `true_peaks` table, and how will later steps use it?
+2. What's in the `true_peaks` table, and how will the analysis functions use it?
 3. Two peaks have the same height and FWHM, one Gaussian and one Lorentzian.
    Which has more area, and why?
 4. What does `eta` control?
@@ -88,7 +88,7 @@ Details and sources:
 1. To have ground truth. With real data we don't know the correct peaks, so
    we can't tell whether a detector or fitter is right. With synthetic data
    we compare its output against the known answer.
-2. One row per peak: shape, center, FWHM, height, area. Steps 4 and 5 will
+2. One row per peak: shape, center, FWHM, height, area. Peak detection and fitting
    output tables with the same columns, so we can measure their errors
    directly (e.g. how far off is each detected center?).
 3. The Lorentzian, about 1.5×, because its long tails hold area that the
@@ -104,4 +104,4 @@ Details and sources:
 
 ---
 
-[← Step 1](01_spectrum.md) · [← Study guide](README.md) · [Step 3 →](03_preprocessing.md)
+[← Spectrum object](01_spectrum.md) · [← Study guide](README.md) · [Preprocessing →](03_preprocessing.md)

@@ -24,6 +24,10 @@ in [docs/PLAN.md](docs/PLAN.md); update it at the end of every step.
   update the "ready to move on" checklist and the professor summary. The user
   is learning the code and will explain the design choices to their
   professor.
+- Docstrings, comments, notebooks and docs other than `docs/PLAN.md` must
+  read on their own: never refer to plan step numbers ("step 5", "later
+  steps"). Name the module, function or topic instead (`spectro.fitting`,
+  "peak fitting", "on real spectra").
 - Add a dependency only when the step's code imports it (`uv add <pkg>`,
   or `uv add --dev <pkg>` for tooling).
 

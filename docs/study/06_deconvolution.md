@@ -1,8 +1,8 @@
-# Step 6 · Deconvolving overlapping peaks
+# Deconvolving overlapping peaks
 
 ## The idea
 
-When two bands overlap, fitting each one on its own (step 5) treats the
+When two bands overlap, fitting each one on its own (`fit_peaks`) treats the
 other as background, so both lose area. **Deconvolution** here means fitting
 them *together*: the model is the sum of all the line shapes in a region,
 and the least-squares fit decides how to share the envelope between them.
@@ -73,13 +73,13 @@ envelope into its component bands by curve fitting.
 | Choice | Why |
 | --- | --- |
 | Fit overlapping peaks together | Each band gets its share of the envelope instead of seeing its neighbour as background. On the notebook's C–H pair the areas go from ~20 % low to within 3 %. |
-| Regions from overlapping ±2 FWHM spans | The same window as step 5, so isolated peaks get the same fit as before; small regions keep each fit fast and stable. A chain of overlapping peaks becomes one region. |
-| One straight-line background per region | As in step 5: absorbs a small leftover baseline. It can't follow a curved one, which is the main failure seen (part 3). |
+| Regions from overlapping ±2 FWHM spans | The same window as `fit_peaks`, so isolated peaks get the same fit as before; small regions keep each fit fast and stable. A chain of overlapping peaks becomes one region. |
+| One straight-line background per region | As in `fit_peaks`: absorbs a small leftover baseline. It can't follow a curved one, which is the main failure seen (part 3). |
 | BIC by default, AIC available | BIC charges more per parameter, so it adds a peak only on strong evidence. On a noisy spectrum AIC added a peak that isn't there; BIC didn't. |
 | Try fewer peaks than detected, and up to `max_extra` more | Detection can both split noise into a peak and miss a hidden band; the criterion judges either way. |
 | New peaks start at the residual's largest bump *or* by splitting a peak in two; the best fit wins | Starting from the residual alone failed on merged pairs: the fit got stuck with one big peak and a sliver (area errors ~90 %). Splitting fixed it (errors ~5 %). |
-| Same line shape for every peak in a region | Simple and matches step 5; mixed shapes could be added if real bands need them. |
-| Fit the unsmoothed spectrum | Same reason as step 5: honest errors. The joint errors cover the truth 70–75 % of the time on the C–H pair. |
+| Same line shape for every peak in a region | Simple and matches `fit_peaks`; mixed shapes could be added if real bands need them. |
+| Fit the unsmoothed spectrum | Same reason as in `fit_peaks`: honest errors. The joint errors cover the truth 70–75 % of the time on the C–H pair. |
 
 ## Literature
 
@@ -91,7 +91,7 @@ envelope into its component bands by curve fitting.
 | Trust the result only if the model is right | Curve fitting is maximum-likelihood only if the model is correct; baseline or shape errors bias the bands (Lórenz-Fonfría and Padrós 2004). Seen here as the spurious O–H component. | Standard caution. |
 
 Full references:
-[LITERATURE.md, step 6](../LITERATURE.md#step-6--deconvolving-overlapping-peaks).
+[LITERATURE.md, Deconvolving overlapping peaks](../LITERATURE.md#deconvolving-overlapping-peaks).
 
 ## Check yourself
 
@@ -120,7 +120,7 @@ Full references:
 2. Which peaks are fitted together. One region for everything means a huge
    fit with many parameters that is slow and easily stuck, and one straight
    line can't serve as background over the whole spectrum. One region per
-   peak is just step 5, with the area loss.
+   peak is just `fit_peaks`, with the area loss.
 3. Every extra peak lowers χ² a little, even if it only fits noise, so the
    smallest χ² would always be the model with the most peaks.
 4. AIC = N ln(χ²/N) + 2k, BIC = N ln(χ²/N) + k ln N. With N = 100,
@@ -151,4 +151,4 @@ Full references:
 
 ---
 
-[← Step 5](05_peak_fitting.md) · [← Study guide](README.md)
+[← Peak fitting](05_peak_fitting.md) · [← Study guide](README.md)

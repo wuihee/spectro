@@ -1,8 +1,8 @@
 # Study guide
 
 A guide to understanding what has been built so far, why it was built that
-way, and how to explain it. This page has the overview; each step has its
-own file (see [Steps](#steps)) with:
+way, and how to explain it. This page has the overview; each topic has its
+own file (see [Topics](#topics)) with:
 
 - **The idea:** the mental model in a few sentences.
 - **Read:** the files to look at, in order.
@@ -25,21 +25,22 @@ The project goal: take IR spectra, find and measure their peaks (including
 overlapping ones), and classify samples by type. Then find out how much data
 that needs.
 
-The whole project is a pipeline, where each step takes the output of the one
+The whole project is a pipeline, where each stage takes the output of the one
 before:
 
 ```text
  file / synthetic ──► Spectrum ──► preprocess ──► detect peaks ──► fit peaks ──► features ──► classify
-     (1, 2)            (1)            (3)             (4)           (5, 6)          (7)          (7, 8)
+      loaders         spectrum    preprocessing       peaks         fitting      (planned)    (planned)
+     synthetic                                                   deconvolution
 ```
 
 Two ideas hold it together:
 
-1. **One data type.** Every step takes and returns a `Spectrum`. Nothing
+1. **One data type.** Every stage takes and returns a `Spectrum`. Nothing
    downstream needs to know where the data came from.
 2. **Ground truth from synthetic data.** With real data we never know the
    "right" peaks, so we can't tell if a method works. With synthetic data we
-   do, so every later step is tested by asking: *did it recover the peaks we
+   do, so every analysis stage is tested by asking: *did it recover the peaks we
    put in?*
 
 If you can draw this pipeline and explain those two ideas, you understand the
@@ -61,9 +62,9 @@ architecture.
 
 ---
 
-## Steps
+## Topics
 
-| Step | Study file | Notebook |
+| # | Study file | Notebook |
 | --- | --- | --- |
 | 1 | [The `Spectrum` object](01_spectrum.md) | `notebooks/01_spectrum_basics.ipynb` |
 | 2 | [Synthetic spectra](02_synthetic_data.md) | `notebooks/02_synthetic_data.ipynb` |
@@ -76,7 +77,7 @@ architecture.
 
 ## Ready to move on when you can…
 
-- [ ] Draw the pipeline from memory and say what each step takes in and
+- [ ] Draw the pipeline from memory and say what each stage takes in and
       gives out.
 - [ ] Explain in two sentences why everything uses one `Spectrum` type.
 - [ ] Explain why we analyse in absorbance.
@@ -95,7 +96,7 @@ architecture.
       overlap) and what will fix them.
 - [ ] Explain how the second derivative finds hidden bands, and its two
       main limits.
-- [ ] For each step, say whether our method is standard in the literature,
+- [ ] For each stage, say whether our method is standard in the literature,
       and name one place where we simplified or deviated, and why (see
       `docs/LITERATURE.md`).
 - [ ] Explain what a least-squares fit minimises and why it needs starting
@@ -112,7 +113,7 @@ architecture.
       that depends on the noise.
 - [ ] Give an example of BIC adding a component that isn't a band, and say
       what it was really fitting.
-- [ ] Answer every "Check yourself" question in the step files without
+- [ ] Answer every "Check yourself" question in the topic files without
       opening the answers.
 
 ## Explaining it to your professor (≈ 1 minute)
@@ -161,7 +162,7 @@ doesn't reject noise wiggles on top of big peaks; prominence does both.)
 *What happens with overlapping peaks?* (Equal peaks closer than about ¾
 FWHM merge into one; the second derivative separates them down to about half
 a FWHM on clean data. Fitting overlapping bands one at a time loses 7–30 %
-of their area; fitting them together (step 6) brings it back to within a few
+of their area; fitting them together (deconvolution) brings it back to within a few
 percent.) *How do you know the fit
 uncertainties are right?* (We refit one peak in 100–200 noise realisations
 and count how often the truth falls inside ±1 error: about 70 %.) *How do you
@@ -169,7 +170,7 @@ choose the number of peaks?* (Fit 1, 2, 3, ... peaks and keep the lowest BIC;
 BIC rather than AIC because AIC added a non-existent peak in our tests. It
 can't tell a band from an artefact: a curved baseline leftover got its own
 component, so added peaks need checking.) *Are these
-standard methods?* (Yes, each step was checked against the literature, with
+standard methods?* (Yes, each stage was checked against the literature, with
 sources in `docs/LITERATURE.md`. The main deviations are a baseline stiffness
 tuned higher than the library default, and a simplified, symmetric
-pseudo-Voigt; both get checked on real spectra in step 9.)
+pseudo-Voigt; both still need checking on real spectra.)

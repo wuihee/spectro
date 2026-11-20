@@ -1,12 +1,13 @@
 """Find peaks in a spectrum automatically and measure their center, FWHM and height.
 
-Detection gives the starting point for peak fitting (step 5) and
-deconvolution (step 6). There are two methods: `detect_peaks` finds local
-maxima and copes with noise; `detect_peaks_derivative` finds minima of the
-second derivative, which also reveals shoulders and closely overlapping
-bands but needs low-noise data. Both return a peak table with the same
-column names as the true peak table from `spectro.synthetic.make_spectrum`,
-so results can be compared row by row with `match_peaks`.
+Detection gives the starting point for peak fitting (`spectro.fitting`)
+and deconvolution (`spectro.deconvolution`). There are two methods:
+`detect_peaks` finds local maxima and copes with noise;
+`detect_peaks_derivative` finds minima of the second derivative, which also
+reveals shoulders and closely overlapping bands but needs low-noise data.
+Both return a peak table with the same column names as the true peak table
+from `spectro.synthetic.make_spectrum`, so results can be compared row by
+row with `match_peaks`.
 """
 
 from __future__ import annotations
@@ -98,7 +99,7 @@ def detect_peaks(
     this is the true FWHM. For overlapping peaks it is not: two equal peaks
     closer than about three-quarters of a FWHM merge into one wider peak,
     and a peak on the shoulder of another is measured from the shoulder.
-    Separating them is the job of deconvolution (step 6).
+    Separating them is the job of `spectro.deconvolution`.
 
     The default threshold uses `estimate_noise`, which doesn't work on
     smoothed data. To detect on a smoothed spectrum, estimate the noise
@@ -213,7 +214,7 @@ def detect_peaks_derivative(
       smoothing, the threshold the derivative needs can hide real bands.
     - It gives positions only. A band's width can't be read reliably off
       the derivative of overlapping bands, so ``fwhm`` is NaN; widths and
-      areas come from fitting (step 5).
+      areas come from fitting (`spectro.fitting`).
 
     Constant and linear baselines have a zero second derivative, so the
     method is not affected by them.
