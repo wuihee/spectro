@@ -70,6 +70,7 @@ architecture.
 | 3 | [Preprocessing](03_preprocessing.md) | `notebooks/03_preprocessing.ipynb` |
 | 4 | [Peak detection](04_peak_detection.md) | `notebooks/04_peak_detection.ipynb` |
 | 5 | [Peak fitting](05_peak_fitting.md) | `notebooks/05_peak_fitting.ipynb` |
+| 6 | [Deconvolving overlapping peaks](06_deconvolution.md) | `notebooks/06_deconvolution.ipynb` |
 
 ---
 
@@ -103,6 +104,14 @@ architecture.
       notebook 05 shows.
 - [ ] Say what a standard error does and doesn't cover (noise, not a wrong
       model).
+- [ ] Explain why overlapping peaks are fitted together, and what a region
+      is.
+- [ ] Write down AIC and BIC, and say why we can't just pick the fit with
+      the smallest residual.
+- [ ] Say how close two equal bands can be and still be separated, and why
+      that depends on the noise.
+- [ ] Give an example of BIC adding a component that isn't a band, and say
+      what it was really fitting.
 - [ ] Answer every "Check yourself" question in the step files without
       opening the answers.
 
@@ -132,6 +141,12 @@ architecture.
 > shape, each with a standard error. We fit the unsmoothed spectrum: we
 > checked that the errors then contain the true value about 68 % of the
 > time, as they should, while on smoothed data they're far too small.
+> Overlapping peaks are fitted together, as a sum of line shapes, and the
+> number of peaks in each overlapping region is chosen with the Bayesian
+> information criterion, which trades fit quality against the number of
+> parameters. On synthetic pairs of equal bands this separates them down to
+> about 0.6 FWHM apart at a signal-to-noise ratio of 50, and 0.4 FWHM at 250,
+> where peak detection alone merges them below about ¾ to 1 FWHM.
 
 Be ready for follow-ups like: *Why pseudo-Voigt and not a true Voigt?* (A
 standard, cheap approximation that is close enough for IR, and its fitted
@@ -146,9 +161,14 @@ doesn't reject noise wiggles on top of big peaks; prominence does both.)
 *What happens with overlapping peaks?* (Equal peaks closer than about ¾
 FWHM merge into one; the second derivative separates them down to about half
 a FWHM on clean data. Fitting overlapping bands one at a time loses 7–30 %
-of their area, so step 6 fits them together.) *How do you know the fit
+of their area; fitting them together (step 6) brings it back to within a few
+percent.) *How do you know the fit
 uncertainties are right?* (We refit one peak in 100–200 noise realisations
-and count how often the truth falls inside ±1 error: about 70 %.) *Are these
+and count how often the truth falls inside ±1 error: about 70 %.) *How do you
+choose the number of peaks?* (Fit 1, 2, 3, ... peaks and keep the lowest BIC;
+BIC rather than AIC because AIC added a non-existent peak in our tests. It
+can't tell a band from an artefact: a curved baseline leftover got its own
+component, so added peaks need checking.) *Are these
 standard methods?* (Yes, each step was checked against the literature, with
 sources in `docs/LITERATURE.md`. The main deviations are a baseline stiffness
 tuned higher than the library default, and a simplified, symmetric

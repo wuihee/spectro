@@ -92,6 +92,20 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
 
 ---
 
+## Step 6 · Deconvolving overlapping peaks
+
+| What we do | What the literature does | Verdict |
+| --- | --- | --- |
+| Fit overlapping bands together, as a sum of line shapes on one background | Curve fitting of the whole envelope is the established way to separate overlapping IR bands; both classic reviews stress that the number, positions, shapes and widths of the components and the baseline form all have to be specified, and that the method has many pitfalls [30], [34]. | Standard |
+| Group peaks into regions where their ±2 FWHM spans overlap | A practical choice so each fit stays small; the literature fits "the band envelope" without a fixed rule for its limits. | Not a method choice |
+| Choose the number of peaks with an information criterion (BIC by default, AIC available) | AIC [35] and BIC [36] are the standard criteria for choosing a model's size. BIC has been used to choose the number of peaks in automatic spectral decomposition [38]; an ice-band study with JWST used AIC the same way [39]. lmfit computes both from χ² [32]. | Standard |
+| BIC rather than AIC by default | BIC charges ln N per parameter instead of 2, so it adds components only on stronger evidence; ΔBIC above 6–10 is "strong" to "very strong" on Kass and Raftery's scale [37]. Our tests agree: on a noisy spectrum without baseline problems AIC added a fourth, non-existent peak where BIC kept the right three. | Standard (and tested) |
+| Candidate models from detection, plus extra peaks at the largest residual bump or by splitting a peak | The literature proposes components from resolution-enhanced spectra (second derivative or FSD) before fitting [25], [38]. Our residual and split starts are a simple search over starting values; the criterion then judges them. `detect_peaks_derivative` can supply the starting table instead. | Simplification |
+| Standard errors from the joint fit | As in step 5. Strongly overlapping peaks are correlated, and the errors grow to show it. The fit is maximum-likelihood only when the model is correct and the noise random; model error and systematic data error (e.g. leftover baseline) bias the bands in ways the errors don't show [40]. Our test: joint errors cover the truth 70–75 % of the time when the model is right; a curved baseline leftover made BIC add a spurious wide component. | Standard, with stated limits |
+| Not used: Bayesian spectral deconvolution with marginal likelihood | Estimates the number of peaks and the noise together by sampling, avoiding both over- and under-fitting [41]. More robust, much slower. | Could be compared later |
+
+---
+
 ## Deviations and follow-ups
 
 1. **arPLS `lam` (step 3):** 1e7 against a library default of 1e5. It was tuned on
@@ -110,6 +124,14 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
    their reported errors don't show it. Step 6 fits them together.
 7. **No true Voigt (step 5):** only Gaussian, Lorentzian and pseudo-Voigt. Add lmfit's
    Voigt if real bands need it (step 9).
+8. **Candidate peaks (step 6):** extra components are proposed from the residual or by
+   splitting a peak, not from a resolution-enhanced spectrum as is usual. Compare with
+   starting from `detect_peaks_derivative` on real low-noise data (step 9).
+9. **Baseline leftover and model choice (step 6):** at noise σ = 0.01, arPLS leaves a
+   curved dip of up to ~0.045 under the broad O–H band; the straight-line background
+   can't follow it, and BIC adds a wide spurious component that takes 9–22 % of the C–H
+   areas. Revisit baseline removal on noisy spectra (step 3 settings) or allow a
+   curved region background, and check on real spectra (step 9).
 
 ---
 
@@ -197,3 +219,26 @@ instrument's spectral bandwidth is narrow compared with the bands [2]. Very stro
 33. "CosmicPAH-IRDB: A web application for including anharmonicity in simulated PAH
     spectra for astrophysics," arXiv:2609.01696 (2026).
     <https://arxiv.org/abs/2609.01696>
+34. B. G. M. Vandeginste and L. De Galan, "Critical evaluation of curve fitting in
+    infrared spectrometry," *Anal. Chem.* 47, 2124–2132 (1975). doi:10.1021/ac60363a029
+    (index entry only; full text not read)
+35. H. Akaike, "A new look at the statistical model identification," *IEEE Trans. Autom.
+    Control* 19, 716–723 (1974). doi:10.1109/TAC.1974.1100705
+36. G. Schwarz, "Estimating the dimension of a model," *Ann. Stat.* 6, 461–464 (1978).
+    doi:10.1214/aos/1176344136
+37. R. E. Kass and A. E. Raftery, "Bayes factors," *J. Am. Stat. Assoc.* 90, 773–795
+    (1995). <https://sites.stat.washington.edu/courses/stat527/s13/readings/KassRaftery_jasa1995.pdf>
+    (scale checked through secondary sources)
+38. H. Shinotsuka, K. Nagata, H. Yoshikawa, Y. Mototake, H. Shouno and M. Okada,
+    "Development of spectral decomposition based on Bayesian information criterion with
+    estimation of confidence interval," *Sci. Technol. Adv. Mater.* 21, 402–419 (2020).
+    doi:10.1080/14686996.2020.1773210 (XPS spectra)
+39. "Ice inventory towards the protostar Ced 110 IRS4 observed with the James Webb Space
+    Telescope," arXiv:2411.19651. <https://arxiv.org/abs/2411.19651> (checked through
+    a search summary of the paper only)
+40. V. A. Lórenz-Fonfría and E. Padrós, "Curve-fitting overlapped bands: quantification
+    and improvement of curve-fitting robustness in the presence of errors in the model
+    and in the data," *Analyst* 129, 1243–1250 (2004). doi:10.1039/B406581F
+41. S. Tokuda, K. Nagata and M. Okada, "Simultaneous estimation of noise variance and
+    number of peaks in Bayesian spectral deconvolution," arXiv:1607.07590.
+    <https://arxiv.org/abs/1607.07590>

@@ -134,4 +134,4 @@ Full references:
 
 ---
 
-[← Step 4](04_peak_detection.md) · [← Study guide](README.md)
+[← Step 4](04_peak_detection.md) · [← Study guide](README.md) · [Step 6 →](06_deconvolution.md)
