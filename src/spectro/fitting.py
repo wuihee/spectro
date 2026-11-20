@@ -251,11 +251,11 @@ def fit_peaks(
     return pd.DataFrame(rows, columns=FIT_COLUMNS)
 
 
-def _fit_row(result: lmfit.model.ModelResult, shape: Shape) -> dict:
-    """Turn a fit result into one row of the `fit_peaks` table."""
+def _fit_row(result: lmfit.model.ModelResult, shape: Shape, prefix: str = "") -> dict:
+    """Turn one peak of a fit result into one row of the `fit_peaks` table."""
     row: dict = {"shape": shape}
     for name in FIT_PARAMS:
-        param = result.params.get(name)
+        param = result.params.get(f"{prefix}{name}")
         row[name] = np.nan if param is None else param.value
         stderr = None if param is None else param.stderr
         row[f"{name}_err"] = np.nan if stderr is None else stderr
